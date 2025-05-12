@@ -2,11 +2,17 @@ plugins {
     alias(libs.plugins.android.application)
     alias(libs.plugins.kotlin.android)
     alias(libs.plugins.kotlin.compose)
+
+    alias(libs.plugins.ksp)
 }
 
 android {
     namespace = "com.example.studyapp"
     compileSdk = 35
+
+    ksp{
+        arg("room.schemaLocation", "$projectDir/schemas")
+    }
 
     defaultConfig {
         applicationId = "com.example.studyapp"
@@ -56,4 +62,6 @@ dependencies {
     androidTestImplementation(libs.androidx.ui.test.junit4)
     debugImplementation(libs.androidx.ui.tooling)
     debugImplementation(libs.androidx.ui.test.manifest)
+    implementation(libs.androidx.room.ktx.v261)
+    ksp(libs.androidx.room.compiler.v261)
 }
