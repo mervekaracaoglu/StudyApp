@@ -1,8 +1,25 @@
 package com.example.studyapp.database
 
-import androix.room.Dao
+import androidx.room.Dao
+import androidx.room.Insert
+import androidx.room.OnConflictStrategy
+import androidx.room.Query
+import androidx.room.Delete
+import kotlinx.coroutines.flow.Flow
 
 
-interface StudyAppDao {
+@Dao
+interface SessionDao {
 
+    @Insert(onConflict = OnConflictStrategy.REPLACE)
+    suspend fun insertSession(session: StudySession)
+
+    @Delete
+    suspend fun deleteSession(session: StudySession)
+
+    @Query("SELECT * FROM study_sessions ORDER BY timestamp DESC")
+    fun getAllSessions(): Flow<List<StudySession>>
+
+    @Query("SELECT * FROM study_sessions WHERE subject = :subject ORDER BY timestamp DESC")
+    fun getSessionsBySubject(subject: String): Flow<List<StudySession>>
 }
