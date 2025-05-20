@@ -1,5 +1,5 @@
 [versions]
-agp = "8.9.2"
+agp = "8.9.3"
 kotlin = "2.0.21"
 coreKtx = "1.16.0"
 junit = "4.13.2"
@@ -12,6 +12,9 @@ composeBom = "2025.05.00"
 roomCommon = "2.6.1"
 roomKtx = "2.7.1"
 roomRuntime = "2.6.1"
+
+firebase = "23.2.0"
+google-auth = "21.3.0"
 
 
 [libraries]
@@ -33,6 +36,12 @@ androidx-material3 = { group = "androidx.compose.material3", name = "material3" 
 androidx-room-compiler-v261 = { module = "androidx.room:room-compiler", version.ref = "roomKtx" }
 androidx-room-ktx-v261 = { module = "androidx.room:room-ktx", version.ref = "roomKtx" }
 androidx-room-testing = { module = "androidx.room:room-testing", version.ref = "roomKtx" }
+
+firebase-auth-ktx = { module = "com.google.firebase:firebase-auth-ktx", version.ref = "firebase" }
+google-auth = { module = "com.google.android.gms:play-services-auth", version.ref = "google-auth" }
+
+navigation-compose = "androidx.navigation:navigation-compose:2.9.0"
+
 
 [plugins]
 android-application = { id = "com.android.application", version.ref = "agp" }

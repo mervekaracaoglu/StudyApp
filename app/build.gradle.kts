@@ -4,6 +4,8 @@ plugins {
     alias(libs.plugins.kotlin.compose)
 
     alias(libs.plugins.ksp)
+
+    id("com.google.gms.google-services")
 }
 
 android {
@@ -64,4 +66,12 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.room.ktx.v261)
     ksp(libs.androidx.room.compiler.v261)
+
+    implementation(libs.firebase.auth.ktx)
+    implementation(libs.google.auth)
+
+    implementation(libs.navigation.compose)
+
+
+
 }

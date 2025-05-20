@@ -4,24 +4,17 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.activity.viewModels
-import androidx.compose.foundation.layout.*
+import androidx.compose.foundation.layout.padding
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.*
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.text.input.KeyboardOptions
-import androidx.compose.ui.unit.dp
-import androidx.compose.ui.text.input.KeyboardType
-import com.example.studyapp.database.StudySession
-import com.example.studyapp.viewModel.SessionViewModel
+import androidx.navigation.NavHostController
+import androidx.navigation.compose.*
 import com.example.studyapp.ui.theme.StudyAppTheme
 
-/**
- * Main activity of the StudyApp.
- */
 class MainActivity : ComponentActivity() {
-
-    private val sessionViewModel: SessionViewModel by viewModels()
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -29,26 +22,62 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             StudyAppTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    LogSessionScreen(
-                        viewModel = sessionViewModel,
-                        onSessionSaved = {
-                            // You could navigate or show a Snackbar here
-                        },
+                val navController = rememberNavController()
+
+                Scaffold(
+                    bottomBar = { BottomBar(navController) }
+                ) { innerPadding ->
+                    NavHost(
+                        navController = navController,
+                        startDestination = "home",
                         modifier = Modifier.padding(innerPadding)
-                    )
+                    ) {
+                        composable("home") { DashboardScreen() }
+                        composable("tasks") { TaskListScreen() }
+                        composable("reminders") { ReminderScreen() }
+                        composable("settings") { SettingsScreen() }
+                    }
                 }
             }
         }
     }
 }
+@Composable
+fun BottomBar(navController: NavHostController) {
+    val items = listOf(
+        BottomNavItem("home", "Home", Icons.Default.Home),
+        BottomNavItem("tasks", "Tasks", Icons.Default.List),
+        BottomNavItem("reminders", "Reminders", Icons.Default.Notifications),
+        BottomNavItem("settings", "Settings", Icons.Default.Settings)
+    )
 
-/**
- * Composable screen for logging a study session.
- */
+    NavigationBar {
+        val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
+        items.forEach { item ->
+            NavigationBarItem(
+                selected = currentRoute == item.route,
+                onClick = {
+                    if (currentRoute != item.route) {
+                        navController.navigate(item.route) {
+                            popUpTo("home")
+                            launchSingleTop = true
+                        }
+                    }
+                },
+                icon = { Icon(item.icon, contentDescription = item.label) },
+                label = { Text(item.label) }
+            )
+        }
+    }
+}
+
+data class BottomNavItem(val route: String, val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
+
+
+/*
 @Composable
 fun LogSessionScreen(
-    viewModel: SessionViewModel,
+    viewModel: StudyViewModel,
     onSessionSaved: () -> Unit,
     modifier: Modifier = Modifier
 ) {
@@ -77,7 +106,7 @@ fun LogSessionScreen(
             value = duration,
             onValueChange = { duration = it },
             label = { Text("Duration (minutes)") },
-            keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
+            //keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
 
@@ -121,3 +150,4 @@ fun LogSessionScreen(
         }
     }
 }
+*/
