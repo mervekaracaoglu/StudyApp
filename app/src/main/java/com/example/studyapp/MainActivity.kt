@@ -13,8 +13,22 @@ import androidx.compose.ui.Modifier
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.studyapp.ui.theme.StudyAppTheme
+import com.example.studyapp.screens.DashboardScreen
+import com.example.studyapp.screens.LogSessionScreen
+import com.example.studyapp.viewModel.StudyViewModel
+import com.example.studyapp.viewModel.StudyViewModelFactory
+import androidx.activity.viewModels
+import com.example.studyapp.database.StudyDatabase
+import com.example.studyapp.repository.StudyRepository
+
 
 class MainActivity : ComponentActivity() {
+
+    private val viewModel: StudyViewModel by viewModels {
+        val dao = StudyDatabase.getDatabase(applicationContext).sessionDao()
+        val repository = StudyRepository(dao)
+        StudyViewModelFactory(repository)
+    }
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -32,10 +46,24 @@ class MainActivity : ComponentActivity() {
                         startDestination = "home",
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        composable("home") { DashboardScreen() }
+                        composable("home") {
+                            DashboardScreen(onLogSessionClick = {navController.navigate("log_session")})
+                        }
+                        composable("log_session"){
+                            LogSessionScreen(
+                                viewModel = viewModel,
+                                onSessionSaved = {
+                                    navController.popBackStack()
+                                }
+                            )
+                        }
+                        /*
                         composable("tasks") { TaskListScreen() }
                         composable("reminders") { ReminderScreen() }
                         composable("settings") { SettingsScreen() }
+                        composable("analytics"){ AnalyticsScreen() }
+
+                         */
                     }
                 }
             }
@@ -74,80 +102,3 @@ fun BottomBar(navController: NavHostController) {
 data class BottomNavItem(val route: String, val label: String, val icon: androidx.compose.ui.graphics.vector.ImageVector)
 
 
-/*
-@Composable
-fun LogSessionScreen(
-    viewModel: StudyViewModel,
-    onSessionSaved: () -> Unit,
-    modifier: Modifier = Modifier
-) {
-    var subject by remember { mutableStateOf("") }
-    var duration by remember { mutableStateOf("") }
-    var tag by remember { mutableStateOf("") }
-    var notes by remember { mutableStateOf("") }
-
-    Column(
-        modifier = modifier
-            .fillMaxSize()
-            .padding(16.dp)
-    ) {
-        Text("Log a Study Session", style = MaterialTheme.typography.titleLarge)
-
-        Spacer(modifier = Modifier.height(16.dp))
-
-        OutlinedTextField(
-            value = subject,
-            onValueChange = { subject = it },
-            label = { Text("Subject") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = duration,
-            onValueChange = { duration = it },
-            label = { Text("Duration (minutes)") },
-            //keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = tag,
-            onValueChange = { tag = it },
-            label = { Text("Tag (optional)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        OutlinedTextField(
-            value = notes,
-            onValueChange = { notes = it },
-            label = { Text("Notes (optional)") },
-            modifier = Modifier.fillMaxWidth()
-        )
-
-        Spacer(modifier = Modifier.height(24.dp))
-
-        Button(
-            onClick = {
-                val validDuration = duration.toIntOrNull()
-                if (subject.isNotBlank() && validDuration != null) {
-                    val session = StudySession(
-                        subject = subject.trim(),
-                        durationMinutes = validDuration,
-                        tag = tag.takeIf { it.isNotBlank() },
-                        notes = notes.takeIf { it.isNotBlank() }
-                    )
-                    viewModel.addSession(session)
-                    onSessionSaved()
-                    subject = ""
-                    duration = ""
-                    tag = ""
-                    notes = ""
-                }
-            },
-            modifier = Modifier.fillMaxWidth()
-        ) {
-            Text("Save Session")
-        }
-    }
-}
-*/

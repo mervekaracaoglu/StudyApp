@@ -66,7 +66,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.room.ktx.v261)
     ksp(libs.androidx.room.compiler.v261)
-
     implementation(libs.firebase.auth.ktx)
     implementation(libs.google.auth)
 
