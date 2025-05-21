@@ -9,6 +9,12 @@ import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
 import com.example.studyapp.database.StudySession
 import com.example.studyapp.viewModel.StudyViewModel
+import java.text.SimpleDateFormat
+import java.util.*
+import androidx.compose.ui.platform.LocalContext
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
+import android.widget.DatePicker
 
 @Composable
 fun LogSessionScreen(
@@ -19,6 +25,52 @@ fun LogSessionScreen(
     var duration by remember { mutableStateOf("") }
     var tag by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
+    var dueDate by remember { mutableStateOf<Long?>(null) }
+    var isCompleted by remember { mutableStateOf(false) }
+
+    val context = LocalContext.current
+    val calendar = remember { Calendar.getInstance() }
+    var dueDateMillis by remember { mutableStateOf<Long?>(null) }
+
+    var showDatePicker by remember { mutableStateOf(false) }
+    var showTimePicker by remember { mutableStateOf(false) }
+
+    if (showDatePicker) {
+        DatePickerDialog(
+            context,
+            { _, year, month, dayOfMonth ->
+                calendar.set(Calendar.YEAR, year)
+                calendar.set(Calendar.MONTH, month)
+                calendar.set(Calendar.DAY_OF_MONTH, dayOfMonth)
+                showDatePicker = false
+                showTimePicker = true
+            },
+            calendar.get(Calendar.YEAR),
+            calendar.get(Calendar.MONTH),
+            calendar.get(Calendar.DAY_OF_MONTH)
+        ).show()
+    }
+
+    if (showTimePicker) {
+        TimePickerDialog(
+            context,
+            { _, hour, minute ->
+                calendar.set(Calendar.HOUR_OF_DAY, hour)
+                calendar.set(Calendar.MINUTE, minute)
+                calendar.set(Calendar.SECOND, 0)
+                dueDateMillis = calendar.timeInMillis
+                showTimePicker = false
+            },
+            calendar.get(Calendar.HOUR_OF_DAY),
+            calendar.get(Calendar.MINUTE),
+            true
+        ).show()
+    }
+
+    val dueDateFormatted = dueDateMillis?.let {
+        SimpleDateFormat("MMM dd, yyyy - HH:mm", Locale.getDefault()).format(Date(it))
+    } ?: "No due date set"
+
 
     Column(
         modifier = Modifier
@@ -57,6 +109,20 @@ fun LogSessionScreen(
             modifier = Modifier.fillMaxWidth()
         )
 
+        Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
+            Checkbox(
+                checked = isCompleted,
+                onCheckedChange = { isCompleted = it }
+            )
+            Spacer(modifier = Modifier.width(8.dp))
+            Text("Completed")
+        }
+
+        Text("Due Date: $dueDateFormatted")
+        Button(onClick = { showDatePicker = true }) {
+            Text("Pick Due Date & Time")
+        }
+
         Button(
             onClick = {
                 val durationInt = duration.toIntOrNull()
@@ -65,13 +131,17 @@ fun LogSessionScreen(
                         subject = subject.trim(),
                         durationMinutes = durationInt,
                         tag = tag.takeIf { it.isNotBlank() },
-                        notes = notes.takeIf { it.isNotBlank() }
+                        notes = notes.takeIf { it.isNotBlank() } ,
+                        dueDate = dueDateMillis,
+                        isCompleted = isCompleted
                     )
                     viewModel.addSession(session)
                     subject = ""
                     duration = ""
                     tag = ""
                     notes = ""
+                    dueDateMillis = null
+                    isCompleted = false
                     onSessionSaved()
                 }
             },

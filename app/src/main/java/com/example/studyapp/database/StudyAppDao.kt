@@ -5,6 +5,7 @@ import androidx.room.Insert
 import androidx.room.OnConflictStrategy
 import androidx.room.Query
 import androidx.room.Delete
+import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
 
@@ -16,6 +17,9 @@ interface SessionDao {
 
     @Delete
     suspend fun deleteSession(session: StudySession)
+
+    @Update
+    suspend fun updateSession(session: StudySession)
 
     @Query("SELECT * FROM study_sessions ORDER BY timestamp DESC")
     fun getAllSessions(): Flow<List<StudySession>>

@@ -70,7 +70,7 @@ dependencies {
     implementation(libs.google.auth)
 
     implementation(libs.navigation.compose)
-
+    implementation("androidx.work:work-runtime-ktx:2.10.1")
 
 
 }

@@ -12,6 +12,8 @@ data class StudySession(
     val timestamp: Long = System.currentTimeMillis(),
     val notes: String? = null,
     val tag: String? = null,
-    val locationLat: Double? = null,
-    val locationLng: Double? = null
+    val dueDate: Long? = null, // new
+    val isCompleted: Boolean = false, // new
+    /*val locationLat: Double? = null,
+    val locationLng: Double? = null*/
 )

@@ -8,24 +8,20 @@ import com.example.studyapp.database.StudyDatabase
 import com.example.studyapp.database.StudySession
 import com.example.studyapp.repository.StudyRepository
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.stateIn
 import kotlinx.coroutines.launch
 
 
 class StudyViewModel(private val repository : StudyRepository )
     : ViewModel() {
 
-    private val _sessions = MutableStateFlow<List<StudySession>>(emptyList())
-    val sessions: StateFlow<List<StudySession>> = _sessions.asStateFlow()
+    val allSessions: StateFlow<List<StudySession>> =
+        repository.getAllSessions()
+            .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
-    fun loadSessions() {
-        viewModelScope.launch {
-            repository.getAllSessions().collect { sessionList ->
-                _sessions.value = sessionList
-            }
-        }
-    }
     fun addSession(session: StudySession) {
         viewModelScope.launch {
             repository.insertSession(session)
@@ -36,4 +32,10 @@ class StudyViewModel(private val repository : StudyRepository )
             repository.deleteSession(session)
         }
     }
+    fun updateSession(session: StudySession) {
+        viewModelScope.launch {
+            repository.updateSession(session)
+        }
+    }
+
 }

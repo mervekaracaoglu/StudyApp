@@ -7,7 +7,9 @@ import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Add
+import androidx.compose.material.icons.filled.List
 import androidx.compose.material.icons.filled.LocationOn
+import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
@@ -18,9 +20,26 @@ import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
+import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.navigation.NavController
+import androidx.compose.runtime.collectAsState
+import androidx.compose.runtime.getValue
+import com.example.studyapp.database.StudySession
+import com.example.studyapp.viewModel.StudyViewModel
+import java.text.SimpleDateFormat
+import java.util.*
+
 
 @Composable
-fun DashboardScreen(onLogSessionClick: () -> Unit = {}) {
+fun DashboardScreen(navController: NavController, viewModel: StudyViewModel) {
+    val sessions by viewModel.allSessions.collectAsState()
+    val upcomingSessions = sessions.filter { session ->
+        session.dueDate?.let { due ->
+            val now = System.currentTimeMillis()
+            val twoDaysFromNow = now + 2 * 24 * 60 * 60 * 1000 // 2 days in ms
+            !session.isCompleted && due in now..twoDaysFromNow
+        } ?: false
+    }
     Column(
         modifier = Modifier
             .fillMaxSize()
@@ -50,11 +69,43 @@ fun DashboardScreen(onLogSessionClick: () -> Unit = {}) {
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        ActionButton("Log a Session", Icons.Default.Add, onClick = onLogSessionClick)
-        ActionButton("View Analytics", Icons.Default.AccountBox)
-        ActionButton("Map View", Icons.Default.LocationOn)
+
+        ActionButton("Log a Session", Icons.Default.Add, onClick = { navController.navigate("log_session")} )
+        ActionButton("Logged Sessions", Icons.Default.AccountBox, onClick = { navController.navigate("loggedSessions") })
+
+        Spacer(modifier = Modifier.height(24.dp))
+
+        if (upcomingSessions.isNotEmpty()) {
+            Text(
+                text = "Upcoming Tasks",
+                style = MaterialTheme.typography.titleMedium,
+                color = Color.White,
+                modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
+            )
+            Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
+                upcomingSessions.forEach { session ->
+                    Surface(
+                        color = Color(0xFF1A1C3B),
+                        shape = RoundedCornerShape(12.dp),
+                        modifier = Modifier.fillMaxWidth()
+                    ) {
+                        Column(modifier = Modifier.padding(12.dp)) {
+                            Text(text = session.subject, color = Color.White)
+                            session.dueDate?.let {
+                                Text(
+                                    text = "Due: ${formatTimestamp(it)}",
+                                    color = Color.LightGray,
+                                    style = MaterialTheme.typography.bodySmall
+                                )
+                            }
+                        }
+                    }
+                }
+            }
+        }
     }
 }
+
 
 @Composable
 fun InfoCard(title: String, value: String) {
@@ -125,3 +176,5 @@ fun ActionButton(label: String, icon: ImageVector, onClick: () -> Unit = {}) {
         }
     }
 }
+
+

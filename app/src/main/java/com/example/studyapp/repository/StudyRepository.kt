@@ -11,6 +11,9 @@ class StudyRepository(private val sessionDao: SessionDao) {
     suspend fun deleteSession(session: StudySession) {
         sessionDao.deleteSession(session)
     }
+    suspend fun updateSession(session: StudySession) {
+        sessionDao.updateSession(session)
+    }
 
     fun getAllSessions(): Flow<List<StudySession>> {
         return sessionDao.getAllSessions()
@@ -19,4 +22,5 @@ class StudyRepository(private val sessionDao: SessionDao) {
     fun getSessionsBySubject(subject: String): Flow<List<StudySession>> {
         return sessionDao.getSessionsBySubject(subject)
     }
+
 }
