@@ -22,5 +22,9 @@ class StudyRepository(private val sessionDao: SessionDao) {
     fun getSessionsBySubject(subject: String): Flow<List<StudySession>> {
         return sessionDao.getSessionsBySubject(subject)
     }
+    suspend fun getTodayStudyMinutes(): Int {
+        return sessionDao.getTodayStudyMinutes() ?: 0
+    }
+
 
 }

@@ -2,8 +2,15 @@
 <manifest xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:tools="http://schemas.android.com/tools">
 
+    <uses-permission android:name="android.permission.SCHEDULE_EXACT_ALARM" />
     <uses-permission android:name="android.permission.POST_NOTIFICATIONS" />
     <uses-permission android:name="android.permission.VIBRATE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_DATA_SYNC" />
+    <uses-permission android:name="android.permission.FOREGROUND_SERVICE_MEDIA_PLAYBACK" />
+    <uses-permission android:name="android.permission.INTERNET" />
+
+
     <application
         android:allowBackup="true"
         android:dataExtractionRules="@xml/data_extraction_rules"
@@ -14,10 +21,12 @@
         android:supportsRtl="true"
         android:theme="@style/Theme.StudyApp"
         tools:targetApi="31">
+        <receiver android:name=".reminders.ReminderReceiver" />
         <service
-            android:name=".background.PomodoroService"
-            android:exported="false"
-            android:foregroundServiceType="mediaPlayback" />
+            android:name=".timer.PomodoroService"
+            android:foregroundServiceType="mediaPlayback|dataSync"
+            android:exported="false" />
+
 
         <activity
             android:name=".MainActivity"

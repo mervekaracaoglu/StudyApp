@@ -8,7 +8,6 @@ import androidx.room.Delete
 import androidx.room.Update
 import kotlinx.coroutines.flow.Flow
 
-
 @Dao
 interface SessionDao {
 
@@ -26,4 +25,14 @@ interface SessionDao {
 
     @Query("SELECT * FROM study_sessions WHERE subject = :subject ORDER BY timestamp DESC")
     fun getSessionsBySubject(subject: String): Flow<List<StudySession>>
+
+
+    @Query("""
+    SELECT SUM(durationMinutes) FROM study_sessions
+    WHERE isCompleted = 1 AND date(timestamp / 1000, 'unixepoch', 'localtime') = date('now', 'localtime')
+""")
+    suspend fun getTodayStudyMinutes(): Int?
+
+
+
 }

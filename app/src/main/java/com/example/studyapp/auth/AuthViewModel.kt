@@ -1,112 +1,89 @@
 package com.example.studyapp.auth
 
 import android.app.Application
-import android.content.Intent
-import android.util.Log
-import androidx.activity.result.ActivityResultLauncher
-import androidx.activity.result.IntentSenderRequest
+import android.content.Context
+import androidx.credentials.CredentialManager
+import androidx.credentials.GetCredentialRequest
 import androidx.lifecycle.AndroidViewModel
-import com.google.android.gms.auth.api.identity.BeginSignInRequest
-import com.google.android.gms.auth.api.identity.Identity
-import com.google.android.gms.auth.api.identity.SignInClient
+import com.example.studyapp.R
 import com.google.firebase.auth.FirebaseAuth
 import com.google.firebase.auth.GoogleAuthProvider
+import com.google.android.libraries.identity.googleid.GetGoogleIdOption
+import com.google.android.libraries.identity.googleid.GoogleIdTokenCredential
+import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.StateFlow
+import kotlinx.coroutines.tasks.await
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import androidx.credentials.exceptions.NoCredentialException
 
-/**
- * ViewModel for handling authentication logic with Firebase.
- */
 class AuthViewModel(application: Application) : AndroidViewModel(application) {
 
-    val auth: FirebaseAuth = FirebaseAuth.getInstance()
+    private val auth = FirebaseAuth.getInstance()
+    private val context: Context = application.applicationContext
 
-    private val context = application.applicationContext
-    private val oneTapClient: SignInClient = Identity.getSignInClient(context)
+    private val _userDisplayName = MutableStateFlow<String?>(null)
+    val userDisplayName: StateFlow<String?> = _userDisplayName
 
-    private val signInRequest: BeginSignInRequest = BeginSignInRequest.builder()
-        .setGoogleIdTokenRequestOptions(
-            BeginSignInRequest.GoogleIdTokenRequestOptions.builder()
-                .setSupported(true)
-                .setServerClientId("192093597100-9flugc9jjhn90e2h6trpv6ofcisnjhip.apps.googleusercontent.com") // Replace with your Web Client ID from Firebase Console
+    private val _userPhotoUrl = MutableStateFlow<String?>(null)
+    val userPhotoUrl: StateFlow<String?> = _userPhotoUrl
+
+    private val _userEmail = MutableStateFlow(auth.currentUser?.email)
+    val userEmail: StateFlow<String?> = _userEmail
+
+    private val _isLoggedIn = MutableStateFlow(auth.currentUser != null)
+    val isLoggedIn: StateFlow<Boolean> = _isLoggedIn
+
+    private val _authError = MutableStateFlow<String?>(null)
+    val authError: StateFlow<String?> = _authError
+
+    suspend fun signInWithGoogle(onSuccess: ()-> Unit = {}) {
+        try {
+            val credentialManager = CredentialManager.create(context)
+
+            val googleIdOption = GetGoogleIdOption.Builder()
+                .setServerClientId(context.getString(R.string.default_web_client_id))
                 .setFilterByAuthorizedAccounts(false)
                 .build()
-        )
-        .setAutoSelectEnabled(true)
-        .build()
 
-    /**
-     * Launches Google One Tap Sign-In.
-     */
-    fun beginGoogleSignIn(
-        launcher: ActivityResultLauncher<IntentSenderRequest>,
-        onError: (String) -> Unit
-    ) {
-        oneTapClient.beginSignIn(signInRequest)
-            .addOnSuccessListener { result ->
-                val intentSenderRequest = IntentSenderRequest.Builder(result.pendingIntent.intentSender).build()
-                launcher.launch(intentSenderRequest)
-            }
-            .addOnFailureListener { e ->
-                onError(e.localizedMessage ?: "Failed to launch Google sign-in.")
-            }
-    }
+            val request = GetCredentialRequest.Builder()
+                .addCredentialOption(googleIdOption)
+                .build()
 
-    /**
-     * Handles the result from One Tap sign-in and signs in with Firebase.
-     */
-    fun handleGoogleSignInResult(
-        data: Intent?,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-        try {
-            val credential = oneTapClient.getSignInCredentialFromIntent(data)
-            val idToken = credential.googleIdToken
-            if (idToken != null) {
+            val result = withContext(Dispatchers.IO) {
+                credentialManager.getCredential(request = request, context = context)
+            }
+
+            val credential = result.credential
+            if (credential is GoogleIdTokenCredential) {
+                val idToken = credential.idToken
                 val firebaseCredential = GoogleAuthProvider.getCredential(idToken, null)
-                auth.signInWithCredential(firebaseCredential)
-                    .addOnSuccessListener { onSuccess() }
-                    .addOnFailureListener { e -> onError(e.message ?: "Firebase sign-in failed") }
-            } else {
-                onError("No Google ID token found.")
+                auth.signInWithCredential(firebaseCredential).await()
+
+                val user = auth.currentUser
+                _isLoggedIn.value = user != null
+                _userEmail.value = user?.email
+                _userDisplayName.value = user?.displayName
+                _userPhotoUrl.value = user?.photoUrl?.toString()
+
+                _authError.value = "Login successful"
+                onSuccess()
             }
+        } catch (e: NoCredentialException) {
+            _authError.value = "No credentials available. Make sure you’re signed into a Google account."
+            _isLoggedIn.value = false
+            _userEmail.value = null
         } catch (e: Exception) {
-            onError(e.message ?: "Sign-in failed")
+            _authError.value = "Login failed: ${e.localizedMessage}"
+            _isLoggedIn.value = false
+            _userEmail.value = null
         }
     }
 
-    /**
-     * Logs in using email and password.
-     */
-    fun signIn(
-        email: String,
-        password: String,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-        auth.signInWithEmailAndPassword(email, password)
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener { e -> onError(e.message ?: "Login failed") }
-    }
 
-    /**
-     * Registers a new user with email and password.
-     */
-    fun signUp(
-        email: String,
-        password: String,
-        onSuccess: () -> Unit,
-        onError: (String) -> Unit
-    ) {
-        auth.createUserWithEmailAndPassword(email, password)
-            .addOnSuccessListener { onSuccess() }
-            .addOnFailureListener { e -> onError(e.message ?: "Sign-up failed") }
-    }
-
-    /**
-     * Signs out from Firebase.
-     */
-    fun signOut() {
+    fun logout() {
         auth.signOut()
-        oneTapClient.signOut()
+        _isLoggedIn.value = false
+        _userEmail.value = null
     }
 }

@@ -1,20 +1,21 @@
 package com.example.studyapp.screens
 
+import android.app.DatePickerDialog
+import android.app.TimePickerDialog
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.platform.LocalContext
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
+import com.example.studyapp.R
 import com.example.studyapp.database.StudySession
 import com.example.studyapp.viewModel.StudyViewModel
 import java.text.SimpleDateFormat
 import java.util.*
-import androidx.compose.ui.platform.LocalContext
-import android.app.DatePickerDialog
-import android.app.TimePickerDialog
-import android.widget.DatePicker
 
 @Composable
 fun LogSessionScreen(
@@ -25,13 +26,11 @@ fun LogSessionScreen(
     var duration by remember { mutableStateOf("") }
     var tag by remember { mutableStateOf("") }
     var notes by remember { mutableStateOf("") }
-    var dueDate by remember { mutableStateOf<Long?>(null) }
     var isCompleted by remember { mutableStateOf(false) }
 
     val context = LocalContext.current
     val calendar = remember { Calendar.getInstance() }
     var dueDateMillis by remember { mutableStateOf<Long?>(null) }
-
     var showDatePicker by remember { mutableStateOf(false) }
     var showTimePicker by remember { mutableStateOf(false) }
 
@@ -69,28 +68,25 @@ fun LogSessionScreen(
 
     val dueDateFormatted = dueDateMillis?.let {
         SimpleDateFormat("MMM dd, yyyy - HH:mm", Locale.getDefault()).format(Date(it))
-    } ?: "No due date set"
-
+    } ?: stringResource(R.string.no_due_date)
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(24.dp),
+        modifier = Modifier.fillMaxSize().padding(24.dp),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
-        Text("Log a Study Session", style = MaterialTheme.typography.titleLarge)
+        Text(stringResource(R.string.log_study_session), style = MaterialTheme.typography.titleLarge)
 
         OutlinedTextField(
             value = subject,
             onValueChange = { subject = it },
-            label = { Text("Subject") },
+            label = { Text(stringResource(R.string.subject)) },
             modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
             value = duration,
             onValueChange = { duration = it },
-            label = { Text("Duration (minutes)") },
+            label = { Text(stringResource(R.string.duration_minutes)) },
             keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
             modifier = Modifier.fillMaxWidth()
         )
@@ -98,29 +94,27 @@ fun LogSessionScreen(
         OutlinedTextField(
             value = tag,
             onValueChange = { tag = it },
-            label = { Text("Tag (optional)") },
+            label = { Text(stringResource(R.string.tag_optional)) },
             modifier = Modifier.fillMaxWidth()
         )
 
         OutlinedTextField(
             value = notes,
             onValueChange = { notes = it },
-            label = { Text("Notes (optional)") },
+            label = { Text(stringResource(R.string.notes_optional)) },
             modifier = Modifier.fillMaxWidth()
         )
 
         Row(verticalAlignment = androidx.compose.ui.Alignment.CenterVertically) {
-            Checkbox(
-                checked = isCompleted,
-                onCheckedChange = { isCompleted = it }
-            )
+            Checkbox(checked = isCompleted, onCheckedChange = { isCompleted = it })
             Spacer(modifier = Modifier.width(8.dp))
-            Text("Completed")
+            Text(stringResource(R.string.completed))
         }
 
-        Text("Due Date: $dueDateFormatted")
+        Text(stringResource(R.string.due_date_label, dueDateFormatted))
+
         Button(onClick = { showDatePicker = true }) {
-            Text("Pick Due Date & Time")
+            Text(stringResource(R.string.pick_due_date_time))
         }
 
         Button(
@@ -131,7 +125,7 @@ fun LogSessionScreen(
                         subject = subject.trim(),
                         durationMinutes = durationInt,
                         tag = tag.takeIf { it.isNotBlank() },
-                        notes = notes.takeIf { it.isNotBlank() } ,
+                        notes = notes.takeIf { it.isNotBlank() },
                         dueDate = dueDateMillis,
                         isCompleted = isCompleted
                     )
@@ -147,7 +141,7 @@ fun LogSessionScreen(
             },
             modifier = Modifier.fillMaxWidth()
         ) {
-            Text("Save Session")
+            Text(stringResource(R.string.save_session))
         }
     }
 }

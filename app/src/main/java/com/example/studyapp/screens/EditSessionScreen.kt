@@ -2,18 +2,18 @@ package com.example.studyapp.screens
 
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.text.KeyboardOptions
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.input.KeyboardType
 import androidx.compose.ui.unit.dp
-import com.example.studyapp.viewModel.StudyViewModel
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.ArrowBack
-import androidx.compose.ui.res.stringResource
 import androidx.navigation.NavController
 import com.example.studyapp.R
+import com.example.studyapp.viewModel.StudyViewModel
 
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
@@ -31,7 +31,7 @@ fun EditSessionScreen(
 
     if (session == null) {
         Box(modifier = Modifier.fillMaxSize(), contentAlignment = Alignment.Center) {
-            Text("Session not found.")
+            Text(stringResource(R.string.session_not_found))
         }
         return
     }
@@ -39,7 +39,7 @@ fun EditSessionScreen(
     Scaffold(
         topBar = {
             TopAppBar(
-                title = { Text("Edit Session") },
+                title = { Text(stringResource(R.string.edit_session)) },
                 navigationIcon = {
                     IconButton(onClick = { navController.popBackStack() }) {
                         Icon(Icons.Default.ArrowBack, contentDescription = stringResource(R.string.back))
@@ -58,14 +58,14 @@ fun EditSessionScreen(
             OutlinedTextField(
                 value = subject,
                 onValueChange = { subject = it },
-                label = { Text("Subject") },
+                label = { Text(stringResource(R.string.subject)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = duration,
                 onValueChange = { duration = it },
-                label = { Text("Duration (minutes)") },
+                label = { Text(stringResource(R.string.duration_minutes)) },
                 keyboardOptions = KeyboardOptions(keyboardType = KeyboardType.Number),
                 modifier = Modifier.fillMaxWidth()
             )
@@ -73,14 +73,14 @@ fun EditSessionScreen(
             OutlinedTextField(
                 value = tag,
                 onValueChange = { tag = it },
-                label = { Text("Tag (optional)") },
+                label = { Text(stringResource(R.string.tag_optional)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
             OutlinedTextField(
                 value = notes,
                 onValueChange = { notes = it },
-                label = { Text("Notes (optional)") },
+                label = { Text(stringResource(R.string.notes_optional)) },
                 modifier = Modifier.fillMaxWidth()
             )
 
@@ -92,12 +92,12 @@ fun EditSessionScreen(
                         tag = tag.takeIf { it.isNotBlank() },
                         notes = notes.takeIf { it.isNotBlank() }
                     )
-                    viewModel.addSession(updated) // replaces due to same ID
+                    viewModel.updateSession(updated)
                     navController.popBackStack()
                 },
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Text("Save Changes")
+                Text(stringResource(R.string.save_changes))
             }
         }
     }

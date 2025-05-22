@@ -8,49 +8,57 @@ import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.AccountBox
 import androidx.compose.material.icons.filled.Add
 import androidx.compose.material.icons.filled.List
-import androidx.compose.material.icons.filled.LocationOn
-import androidx.compose.material.icons.filled.Notifications
 import androidx.compose.material3.*
-import androidx.compose.runtime.Composable
+import androidx.compose.runtime.*
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.graphics.Color
-import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.compose.ui.graphics.vector.ImageVector
-import androidx.lifecycle.viewmodel.compose.viewModel
+import androidx.compose.ui.res.stringResource
+import androidx.compose.ui.text.font.FontWeight
 import androidx.navigation.NavController
-import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.getValue
-import com.example.studyapp.database.StudySession
+import com.example.studyapp.R
 import com.example.studyapp.viewModel.StudyViewModel
-import java.text.SimpleDateFormat
-import java.util.*
-
 
 @Composable
 fun DashboardScreen(navController: NavController, viewModel: StudyViewModel) {
+    LaunchedEffect(Unit) {
+        viewModel.loadTodayStudyMinutes()
+    }
+
     val sessions by viewModel.allSessions.collectAsState()
     val upcomingSessions = sessions.filter { session ->
         session.dueDate?.let { due ->
             val now = System.currentTimeMillis()
-            val twoDaysFromNow = now + 2 * 24 * 60 * 60 * 1000 // 2 days in ms
+            val twoDaysFromNow = now + 2 * 24 * 60 * 60 * 1000
             !session.isCompleted && due in now..twoDaysFromNow
         } ?: false
     }
+
+    val minutesToday by viewModel.todayStudyMinutes.collectAsState()
+    val formattedTime = remember(minutesToday) {
+        val hours = minutesToday / 60
+        val mins = minutesToday % 60
+        if (hours > 0) "$hours h $mins m" else "$mins m"
+    }
+
+    val currentStreak by viewModel.currentStreak.collectAsState()
+    val weeklyStudyMinutes by viewModel.weeklyStudyMinutes.collectAsState()
+    val weeklyGoalMinutes by viewModel.weeklyGoalMinutes.collectAsState()
+
     Column(
         modifier = Modifier
             .fillMaxSize()
-            .background(Color(0xFF0B0C2A))
+            .background(MaterialTheme.colorScheme.background)
             .padding(20.dp)
     ) {
         Text(
-            text = "Welcome to StudyBuddy",
+            text = stringResource(R.string.welcome),
             fontSize = 24.sp,
             fontWeight = FontWeight.Bold,
-            color = Color.White
+            color = MaterialTheme.colorScheme.onBackground
         )
 
         Spacer(modifier = Modifier.height(24.dp))
@@ -59,42 +67,51 @@ fun DashboardScreen(navController: NavController, viewModel: StudyViewModel) {
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
         ) {
-            InfoCard(title = "Time Studied", value = "1h 30m")
-            InfoCard(title = "Current Streak", value = "5 days")
+            InfoCard(stringResource(R.string.time_studied), formattedTime)
+            InfoCard(stringResource(R.string.current_streak), "$currentStreak days")
         }
 
         Spacer(modifier = Modifier.height(24.dp))
 
-        GoalProgressBar(current = 12, goal = 15)
+        GoalProgressBar(
+            current = weeklyStudyMinutes,
+            goal = weeklyGoalMinutes,
+            onGoalChange = { viewModel.setWeeklyGoal(it) }
+        )
 
         Spacer(modifier = Modifier.height(24.dp))
 
-
-        ActionButton("Log a Session", Icons.Default.Add, onClick = { navController.navigate("log_session")} )
-        ActionButton("Logged Sessions", Icons.Default.AccountBox, onClick = { navController.navigate("loggedSessions") })
-
-        Spacer(modifier = Modifier.height(24.dp))
+        ActionButton(stringResource(R.string.log_a_session), Icons.Default.Add) {
+            navController.navigate("log_session")
+        }
+        ActionButton(stringResource(R.string.logged_sessions), Icons.Default.List) {
+            navController.navigate("loggedSessions")
+        }
 
         if (upcomingSessions.isNotEmpty()) {
             Text(
-                text = "Upcoming Tasks",
+                text = stringResource(R.string.upcoming_tasks),
                 style = MaterialTheme.typography.titleMedium,
-                color = Color.White,
+                color = MaterialTheme.colorScheme.onBackground,
                 modifier = Modifier.padding(top = 24.dp, bottom = 8.dp)
             )
             Column(verticalArrangement = Arrangement.spacedBy(8.dp)) {
                 upcomingSessions.forEach { session ->
                     Surface(
-                        color = Color(0xFF1A1C3B),
+                        color = MaterialTheme.colorScheme.surfaceVariant,
                         shape = RoundedCornerShape(12.dp),
                         modifier = Modifier.fillMaxWidth()
                     ) {
                         Column(modifier = Modifier.padding(12.dp)) {
-                            Text(text = session.subject, color = Color.White)
+                            Text(
+                                text = session.subject,
+                                color = MaterialTheme.colorScheme.onSurface,
+                                style = MaterialTheme.typography.bodyLarge
+                            )
                             session.dueDate?.let {
                                 Text(
-                                    text = "Due: ${formatTimestamp(it)}",
-                                    color = Color.LightGray,
+                                    text = stringResource(R.string.due_label, formatTimestamp(it)),
+                                    color = MaterialTheme.colorScheme.onSurfaceVariant,
                                     style = MaterialTheme.typography.bodySmall
                                 )
                             }
@@ -106,51 +123,19 @@ fun DashboardScreen(navController: NavController, viewModel: StudyViewModel) {
     }
 }
 
-
 @Composable
 fun InfoCard(title: String, value: String) {
     Surface(
-        modifier = Modifier
-            .height(100.dp),
+        modifier = Modifier.height(100.dp),
         shape = RoundedCornerShape(16.dp),
-        color = Color(0xFF1A1C3B)
+        color = MaterialTheme.colorScheme.surfaceVariant
     ) {
         Column(
             modifier = Modifier.padding(16.dp),
             verticalArrangement = Arrangement.SpaceBetween
         ) {
-            Text(title, color = Color.LightGray, fontSize = 14.sp)
-            Text(value, color = Color.White, fontSize = 20.sp, fontWeight = FontWeight.Bold)
-        }
-    }
-}
-
-@Composable
-fun GoalProgressBar(current: Int, goal: Int) {
-    Surface(
-        shape = RoundedCornerShape(16.dp),
-        color = Color(0xFF1A1C3B),
-        modifier = Modifier.fillMaxWidth()
-    ) {
-        Column(modifier = Modifier.padding(16.dp)) {
-            Text("Weekly Goal Progress", color = Color.LightGray, fontSize = 14.sp)
-            Spacer(modifier = Modifier.height(8.dp))
-            LinearProgressIndicator(
-                progress = current / goal.toFloat(),
-                color = Color.Cyan,
-                trackColor = Color.DarkGray,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(8.dp)
-                    .clip(RoundedCornerShape(4.dp))
-            )
-            Spacer(modifier = Modifier.height(8.dp))
-            Text(
-                "${current}h / ${goal}h",
-                color = Color.White,
-                fontSize = 14.sp,
-                fontWeight = FontWeight.Medium
-            )
+            Text(title, color = MaterialTheme.colorScheme.onSurfaceVariant, fontSize = 14.sp)
+            Text(value, color = MaterialTheme.colorScheme.onSurface, fontSize = 20.sp, fontWeight = FontWeight.Bold)
         }
     }
 }
@@ -159,22 +144,97 @@ fun GoalProgressBar(current: Int, goal: Int) {
 fun ActionButton(label: String, icon: ImageVector, onClick: () -> Unit = {}) {
     Surface(
         shape = RoundedCornerShape(16.dp),
-        color = Color(0xFF1A1C3B),
+        color = MaterialTheme.colorScheme.surfaceVariant,
         modifier = Modifier
             .fillMaxWidth()
             .height(60.dp)
             .padding(vertical = 8.dp)
-            .clickable { onClick()}
+            .clickable { onClick() }
     ) {
         Row(
             verticalAlignment = Alignment.CenterVertically,
             modifier = Modifier.padding(start = 16.dp)
         ) {
-            Icon(icon, contentDescription = label, tint = Color(0xFF89CFF0))
+            Icon(icon, contentDescription = label, tint = MaterialTheme.colorScheme.primary)
             Spacer(modifier = Modifier.width(16.dp))
-            Text(label, color = Color.White, fontSize = 16.sp)
+            Text(label, color = MaterialTheme.colorScheme.onSurface, fontSize = 16.sp)
         }
     }
 }
 
+@Composable
+fun GoalProgressBar(
+    current: Int,
+    goal: Int,
+    onGoalChange: (Int) -> Unit
+) {
+    var showDialog by remember { mutableStateOf(false) }
+    var sliderValue by remember { mutableStateOf(goal.toFloat()) }
+
+    if (showDialog) {
+        AlertDialog(
+            onDismissRequest = { showDialog = false },
+            title = { Text(stringResource(R.string.set_weekly_goal)) },
+            text = {
+                Column {
+                    val hours = sliderValue.toInt() / 60
+                    val minutes = sliderValue.toInt() % 60
+                    Text("$hours h $minutes m")
+
+                    Slider(
+                        value = sliderValue,
+                        onValueChange = { sliderValue = it },
+                        valueRange = 30f..1000f,
+                        steps = 10
+                    )
+                }
+            },
+            confirmButton = {
+                TextButton(onClick = {
+                    onGoalChange(sliderValue.toInt())
+                    showDialog = false
+                }) {
+                    Text(stringResource(R.string.set_goal))
+                }
+            },
+            dismissButton = {
+                TextButton(onClick = { showDialog = false }) {
+                    Text(stringResource(R.string.cancel))
+                }
+            }
+        )
+    }
+
+    Column(
+        modifier = Modifier
+            .fillMaxWidth()
+            .clip(RoundedCornerShape(8.dp))
+            .background(MaterialTheme.colorScheme.surfaceVariant)
+            .clickable {
+                sliderValue = goal.toFloat()
+                showDialog = true
+            }
+            .padding(16.dp)
+    ) {
+        Text(stringResource(R.string.weekly_progress), color = MaterialTheme.colorScheme.onSurface)
+        LinearProgressIndicator(
+            progress = (current.toFloat() / goal).coerceAtMost(1f),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(16.dp)
+                .padding(top = 8.dp),
+            color = MaterialTheme.colorScheme.primary
+        )
+        val currentHours = current / 60
+        val currentMinutes = current % 60
+        val goalHours = goal / 60
+        val goalMinutes = goal % 60
+
+        Text(
+            "$currentHours h $currentMinutes m / $goalHours h $goalMinutes m",
+            color = MaterialTheme.colorScheme.onSurface,
+            modifier = Modifier.padding(top = 8.dp)
+        )
+    }
+}
 
