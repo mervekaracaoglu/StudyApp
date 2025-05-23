@@ -94,5 +94,18 @@ dependencies {
     testImplementation(libs.androidx.test.core)
     testImplementation(kotlin("test"))
 
+    androidTestImplementation(libs.mockito.android)
+    androidTestImplementation(libs.androidx.navigation.testing)
+    androidTestImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.mockito.kotlin)
+    testImplementation(libs.turbine)
+    testImplementation(libs.mockito)
+    testImplementation(libs.robolectric)
+    androidTestImplementation(libs.androidx.room.testing)
+    androidTestImplementation(libs.junit)
+    androidTestImplementation("androidx.test:core:1.5.0")
+    androidTestImplementation("androidx.test.ext:junit:1.1.5")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+
 
 }

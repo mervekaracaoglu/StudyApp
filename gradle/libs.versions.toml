@@ -27,7 +27,16 @@ firebase-bom = "33.14.0"
 
 mockk = "1.13.3"
 coroutinesTest = "1.8.1"
-junitCore = "1.5.0"
+junitCore = "1.6.1"
+mockito = "5.2.0"
+navigationTesting = "2.9.0"
+turbine = "1.0.0"
+mockitoKotlin = "5.2.1"
+robolectric = "4.12.1"
+roomTesting = "2.6.1"
+
+
+
 
 
 
@@ -78,7 +87,12 @@ appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.7.0
 mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
 kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutinesTest" }
 androidx-test-core = { group = "androidx.test", name = "core", version.ref = "junitCore" }
-
+mockito-android = { module = "org.mockito:mockito-android", version.ref = "mockito" }
+androidx-navigation-testing = { module = "androidx.navigation:navigation-testing", version.ref = "navigationTesting" }
+turbine = { module = "app.cash.turbine:turbine", version.ref = "turbine" }
+mockito-kotlin = { module = "org.mockito.kotlin:mockito-kotlin", version.ref = "mockitoKotlin" }
+mockito = { module = "org.mockito:mockito-core", version.ref = "mockito" }
+robolectric = { module = "org.robolectric:robolectric", version.ref = "robolectric" }
 
 
 [plugins]
