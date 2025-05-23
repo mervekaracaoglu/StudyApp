@@ -76,7 +76,7 @@ dependencies {
     implementation(libs.datastore.preferences)
     implementation(libs.credentials)
     implementation(libs.googleid)
-    implementation("io.coil-kt:coil-compose:2.4.0")
+    implementation(libs.coil.compose)
 
     implementation("androidx.credentials:credentials:1.6.0-alpha02")
     implementation("androidx.credentials:credentials-play-services-auth:1.6.0-alpha02")
@@ -89,7 +89,10 @@ dependencies {
 
     implementation(libs.appcompat)
 
-
+    testImplementation(libs.mockk)
+    testImplementation(libs.kotlinx.coroutines.test)
+    testImplementation(libs.androidx.test.core)
+    testImplementation(kotlin("test"))
 
 
 }

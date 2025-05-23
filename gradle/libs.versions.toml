@@ -25,6 +25,12 @@ credentials = "1.5.0"
 
 firebase-bom = "33.14.0"
 
+mockk = "1.13.3"
+coroutinesTest = "1.8.1"
+junitCore = "1.5.0"
+
+
+
 
 
 
@@ -67,7 +73,11 @@ firebase-bom = { group = "com.google.firebase", name = "firebase-bom", version.r
 firebase-auth = { group = "com.google.firebase", name = "firebase-auth-ktx" }
 firebase-firestore = { group = "com.google.firebase", name = "firebase-firestore-ktx" }
 
-appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.6.1" }
+appcompat = { group = "androidx.appcompat", name = "appcompat", version = "1.7.0" }
+
+mockk = { module = "io.mockk:mockk", version.ref = "mockk" }
+kotlinx-coroutines-test = { module = "org.jetbrains.kotlinx:kotlinx-coroutines-test", version.ref = "coroutinesTest" }
+androidx-test-core = { group = "androidx.test", name = "core", version.ref = "junitCore" }
 
 
 
