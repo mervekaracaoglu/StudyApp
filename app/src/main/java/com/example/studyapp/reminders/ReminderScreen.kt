@@ -75,14 +75,13 @@ fun ReminderScreen() {
             Text("Save Reminder")
         }
 
-        Divider(modifier = Modifier.padding(vertical = 16.dp))
+
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
         Text("Scheduled Reminders", style = MaterialTheme.typography.titleMedium)
         reminders.forEach { reminder ->
             Row(
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .padding(vertical = 4.dp),
+                modifier = Modifier.fillMaxWidth().padding(vertical = 4.dp),
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {

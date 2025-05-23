@@ -4,7 +4,7 @@ import androidx.compose.foundation.Canvas
 import androidx.compose.foundation.layout.*
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.Divider
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.MaterialTheme
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -30,10 +30,7 @@ fun AnalyticsScreen(viewModel: StudyViewModel) {
     }
 
     Column(
-        modifier = Modifier
-            .fillMaxSize()
-            .padding(16.dp)
-            .verticalScroll(rememberScrollState()),
+        modifier = Modifier.fillMaxSize().padding(16.dp).verticalScroll(rememberScrollState()),
         verticalArrangement = Arrangement.spacedBy(16.dp)
     ) {
         Text(
@@ -53,7 +50,7 @@ fun AnalyticsScreen(viewModel: StudyViewModel) {
             )
         }
 
-        Divider(modifier = Modifier.padding(vertical = 16.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
         if (tagCount.isNotEmpty()) {
             Text(stringResource(R.string.most_used_tags), style = MaterialTheme.typography.titleMedium)
@@ -61,7 +58,7 @@ fun AnalyticsScreen(viewModel: StudyViewModel) {
                 Text("${it.key}: ${it.value}x")
             }
         }
-        Divider(modifier = Modifier.padding(vertical = 16.dp))
+        HorizontalDivider(modifier = Modifier.padding(vertical = 16.dp))
 
 
         if (subjectDurations.isNotEmpty()) {

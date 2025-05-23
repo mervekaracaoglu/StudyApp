@@ -1,5 +1,4 @@
-
-package com.example.studyapp.settings
+package com.example.studyapp.setTheme
 
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey
@@ -11,18 +10,20 @@ import kotlinx.coroutines.flow.map
 val Context.dataStore by preferencesDataStore(name = "settings")
 
 object SettingsDataStore {
+
     private val DARK_THEME_KEY = booleanPreferencesKey("dark_theme")
 
-    suspend fun saveThemePreference(context: Context, isDarkTheme: Boolean) {
+    suspend fun toggleDarkTheme(context: Context) {
         context.dataStore.edit { preferences ->
-            preferences[DARK_THEME_KEY] = isDarkTheme
+            val current = preferences[DARK_THEME_KEY] == true
+            preferences[DARK_THEME_KEY] = !current
         }
     }
 
     fun getSettings(context: Context): Flow<SettingsUiState> {
         return context.dataStore.data.map { preferences ->
             SettingsUiState(
-                isDarkTheme = preferences[DARK_THEME_KEY] ?: false
+                isDarkTheme = preferences[DARK_THEME_KEY] == true
             )
         }
     }

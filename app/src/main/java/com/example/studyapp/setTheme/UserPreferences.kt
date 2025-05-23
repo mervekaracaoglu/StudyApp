@@ -1,4 +1,4 @@
-package com.example.studyapp.settings
+package com.example.studyapp.setTheme
 
 import android.content.Context
 import androidx.datastore.preferences.core.edit

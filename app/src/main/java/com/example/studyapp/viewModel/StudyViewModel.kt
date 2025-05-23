@@ -1,15 +1,12 @@
 package com.example.studyapp.viewModel
 
 import android.app.Application
-import android.util.Log
 import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.example.studyapp.database.StudySession
-import com.example.studyapp.settings.UserPreferences
+import com.example.studyapp.setTheme.UserPreferences
 import com.example.studyapp.repository.StudyRepository
-import com.google.firebase.auth.FirebaseAuth
-import com.google.firebase.firestore.FirebaseFirestore
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
@@ -30,8 +27,6 @@ class StudyViewModel(application: Application, private val repository : StudyRep
     fun addSession(session: StudySession) {
         viewModelScope.launch {
             repository.insertSession(session)
-            syncSessionToFirestore(session)
-
         }
     }
     fun deleteSession(session: StudySession) {
@@ -56,7 +51,7 @@ class StudyViewModel(application: Application, private val repository : StudyRep
 
     val currentStreak: StateFlow<Int> = allSessions.map { sessions ->
         val dates = sessions
-            .mapNotNull { it.timestamp }
+            .map { it.timestamp }
             .map { Date(it) }
             .map { date -> SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(date) }
             .toSet()
@@ -111,46 +106,6 @@ class StudyViewModel(application: Application, private val repository : StudyRep
             UserPreferences.saveWeeklyGoal(application, minutes)
         }
     }
-
-    private fun syncSessionToFirestore(session: StudySession) {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-
-        val sessionData = hashMapOf(
-            "subject" to session.subject,
-            "durationMinutes" to session.durationMinutes,
-            "timestamp" to session.timestamp
-        )
-
-        FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(userId)
-            .collection("sessions")
-            .add(sessionData)
-    }
-
-    fun loadSessionsFromFirestore() {
-        val userId = FirebaseAuth.getInstance().currentUser?.uid ?: return
-
-        FirebaseFirestore.getInstance()
-            .collection("users")
-            .document(userId)
-            .collection("sessions")
-            .get()
-            .addOnSuccessListener { result ->
-                Log.d("Firestore", "Fetched ${result.size()} documents")
-                viewModelScope.launch {
-                    for (doc in result) {
-                        val subject = doc.getString("subject") ?: continue
-                        val duration = doc.getLong("durationMinutes")?.toInt() ?: continue
-                        val timestamp = doc.getLong("timestamp") ?: continue
-
-                        val session = StudySession(subject = subject, durationMinutes = duration, timestamp = timestamp)
-                        repository.insertSession(session)
-                    }
-                }
-            }
-    }
-
 
 
 

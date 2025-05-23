@@ -15,10 +15,8 @@ import androidx.compose.foundation.layout.padding
 import androidx.compose.material3.*
 import androidx.compose.runtime.*
 import androidx.compose.ui.Modifier
-import androidx.compose.ui.platform.LocalContext
 import androidx.core.content.ContextCompat
 import androidx.lifecycle.lifecycleScope
-import androidx.lifecycle.viewmodel.compose.viewModel
 import androidx.navigation.NavHostController
 import androidx.navigation.compose.*
 import com.example.studyapp.database.StudyDatabase
@@ -31,17 +29,12 @@ import com.example.studyapp.reminders.ReminderScreen
 import com.example.studyapp.timer.PomodoroViewModel
 import com.example.studyapp.timer.PomodoroScreen
 import com.example.studyapp.timer.PomodoroViewModelFactory
-import com.example.studyapp.settings.SettingsScreen
-import com.example.studyapp.auth.AuthViewModel
-import com.example.studyapp.settings.SettingsDataStore
-import com.example.studyapp.settings.SettingsViewModel
-import com.example.studyapp.settings.SettingsViewModelFactory
-import com.google.firebase.auth.FirebaseAuth
+import com.example.studyapp.setTheme.SettingsDataStore
 import kotlinx.coroutines.launch
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
-import com.example.studyapp.settings.SettingsUiState
+import com.example.studyapp.setTheme.SettingsUiState
 
 
 class MainActivity : ComponentActivity() {
@@ -57,14 +50,8 @@ class MainActivity : ComponentActivity() {
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
-        lifecycleScope.launch {
-            SettingsDataStore.getSettings(applicationContext).collect { prefs ->
-                AppCompatDelegate.setDefaultNightMode(
-                    if (prefs.isDarkTheme) AppCompatDelegate.MODE_NIGHT_YES
-                    else AppCompatDelegate.MODE_NIGHT_NO
-                )
-            }
-        }
+
+
 
         enableEdgeToEdge()
         val settingsFlow = SettingsDataStore.getSettings(applicationContext)
@@ -72,6 +59,13 @@ class MainActivity : ComponentActivity() {
 
         setContent {
             val uiState by settingsFlow.collectAsState(initial = SettingsUiState())
+
+            LaunchedEffect(uiState.isDarkTheme) {
+                AppCompatDelegate.setDefaultNightMode(
+                    if (uiState.isDarkTheme) AppCompatDelegate.MODE_NIGHT_YES
+                    else AppCompatDelegate.MODE_NIGHT_NO
+                )
+            }
 
             StudyAppTheme(darkTheme = uiState.isDarkTheme) {
                 val navController = rememberNavController()
@@ -86,11 +80,6 @@ class MainActivity : ComponentActivity() {
                         if (isGranted) "Notification permission granted" else "Notification permission denied",
                         Toast.LENGTH_SHORT
                     ).show()
-                }
-                LaunchedEffect(Unit) {
-                    if (FirebaseAuth.getInstance().currentUser != null) {
-                        viewModel.loadSessionsFromFirestore()
-                    }
                 }
 
                 LaunchedEffect(Unit) {
@@ -110,12 +99,22 @@ class MainActivity : ComponentActivity() {
                 ) { innerPadding ->
                     NavHost(
                         navController = navController,
-                        startDestination = "home",
+                        startDestination = "dashboard",
                         modifier = Modifier.padding(innerPadding)
                     ) {
-                        composable("home") {
-                            DashboardScreen(navController = navController, viewModel = viewModel)
+                        composable("dashboard") {
+                            DashboardScreen(
+                                navController = navController,
+                                viewModel = viewModel,
+                                isDarkTheme = uiState.isDarkTheme,
+                                onToggleTheme = {
+                                    lifecycleScope.launch {
+                                        SettingsDataStore.toggleDarkTheme(applicationContext)
+                                    }
+                                }
+                            )
                         }
+
                         composable("log_session") {
                             LogSessionScreen(viewModel = viewModel) {
                                 navController.popBackStack()
@@ -139,13 +138,6 @@ class MainActivity : ComponentActivity() {
                         composable("reminders") {
                             ReminderScreen()
                         }
-                        composable("settings"){
-                            val context = LocalContext.current
-                            val authViewModel: AuthViewModel = viewModel()
-                            val settingsViewModel: SettingsViewModel = viewModel(factory = SettingsViewModelFactory(context))
-
-                            SettingsScreen(authViewModel = authViewModel, viewModel = settingsViewModel, studyViewModel = this@MainActivity.viewModel)
-                        }
                         }
 
                     }
@@ -159,8 +151,7 @@ fun BottomBar(navController: NavHostController) {
     val items = listOf(
         BottomNavItem("pomodoro", "Timer", painterResource(R.drawable.baseline_timer_24) ),
         BottomNavItem("reminders", "Reminders", painterResource(R.drawable.baseline_notifications_24)),
-        BottomNavItem("home", "Home", painterResource(R.drawable.baseline_home_24)),
-        BottomNavItem("settings", "Settings", painterResource(R.drawable.baseline_settings_24)),
+        BottomNavItem("dashboard", "Home", painterResource(R.drawable.baseline_home_24)),
         BottomNavItem("analytics", "Analytics", painterResource(R.drawable.baseline_analytics_24))
     )
 

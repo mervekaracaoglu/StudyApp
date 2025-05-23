@@ -10,6 +10,7 @@ import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.studyapp.R
+import java.util.Locale
 
 @Composable
 fun PomodoroScreen(
@@ -19,7 +20,7 @@ fun PomodoroScreen(
 
     val minutes = (state.timeLeftMillis / 1000) / 60
     val seconds = (state.timeLeftMillis / 1000) % 60
-    val timeText = String.format("%02d:%02d", minutes, seconds)
+    val timeText = String.format(Locale.US, "%02d:%02d", minutes, seconds)
 
     Column(
         modifier = Modifier.fillMaxSize().padding(32.dp),

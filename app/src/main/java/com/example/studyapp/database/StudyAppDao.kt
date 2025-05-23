@@ -23,10 +23,6 @@ interface SessionDao {
     @Query("SELECT * FROM study_sessions ORDER BY timestamp DESC")
     fun getAllSessions(): Flow<List<StudySession>>
 
-    @Query("SELECT * FROM study_sessions WHERE subject = :subject ORDER BY timestamp DESC")
-    fun getSessionsBySubject(subject: String): Flow<List<StudySession>>
-
-
     @Query("""
     SELECT SUM(durationMinutes) FROM study_sessions
     WHERE isCompleted = 1 AND date(timestamp / 1000, 'unixepoch', 'localtime') = date('now', 'localtime')

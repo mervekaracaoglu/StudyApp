@@ -1,7 +1,6 @@
 package com.example.studyapp.timer
 
 import android.app.*
-import android.content.Context
 import android.content.Intent
 import android.app.NotificationChannel
 import android.app.NotificationManager
@@ -13,6 +12,7 @@ import com.example.studyapp.R
 import kotlinx.coroutines.*
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.update
+import java.util.Locale
 
 class PomodoroService : LifecycleService() {
 
@@ -123,7 +123,7 @@ class PomodoroService : LifecycleService() {
     private fun buildNotification(current: PomodoroState): Notification {
         val minutes = (current.timeLeftMillis / 1000) / 60
         val seconds = (current.timeLeftMillis / 1000) % 60
-        val formattedTime = String.format("%02d:%02d", minutes, seconds)
+        val formattedTime =  String.format(Locale.US, "%02d:%02d", minutes, seconds)
 
         val pauseIntent = Intent(this, PomodoroService::class.java).apply { action = ACTION_PAUSE }
         val resetIntent = Intent(this, PomodoroService::class.java).apply { action = ACTION_RESET }
@@ -141,7 +141,7 @@ class PomodoroService : LifecycleService() {
     }
 
     private fun updateNotification() {
-        val manager = getSystemService(Context.NOTIFICATION_SERVICE) as NotificationManager
+        val manager = getSystemService(NOTIFICATION_SERVICE) as NotificationManager
         manager.notify(notificationId, buildNotification(state.value))
     }
 
