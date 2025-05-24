@@ -1,4 +1,4 @@
-package com.example.studyapp.setTheme
+package com.example.studyapp.datastore
 
 data class SettingsUiState(
     val isDarkTheme: Boolean = false,

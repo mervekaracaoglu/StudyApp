@@ -2,6 +2,7 @@ package com.example.studyapp
 
 import app.cash.turbine.test
 import com.example.studyapp.reminders.ReminderDao
+import com.example.studyapp.reminders.ReminderEntity
 import com.example.studyapp.reminders.ReminderViewModel
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.ExperimentalCoroutinesApi

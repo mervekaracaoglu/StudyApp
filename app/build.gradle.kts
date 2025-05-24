@@ -66,7 +66,6 @@ dependencies {
     debugImplementation(libs.androidx.ui.test.manifest)
     implementation(libs.androidx.room.ktx.v261)
     ksp(libs.androidx.room.compiler.v261)
-    implementation(libs.google.auth)
 
     implementation(libs.navigation.compose)
     implementation("androidx.work:work-runtime-ktx:2.10.1")
@@ -74,18 +73,8 @@ dependencies {
     implementation(libs.androidx.lifecycle.service)
     implementation(libs.androidx.lifecycle.runtime.ktx)
     implementation(libs.datastore.preferences)
-    implementation(libs.credentials)
-    implementation(libs.googleid)
     implementation(libs.coil.compose)
 
-    implementation("androidx.credentials:credentials:1.6.0-alpha02")
-    implementation("androidx.credentials:credentials-play-services-auth:1.6.0-alpha02")
-    implementation("com.google.android.libraries.identity.googleid:googleid:1.1.1")
-
-    implementation(platform(libs.firebase.bom))
-
-    implementation(libs.firebase.auth)
-    implementation(libs.firebase.firestore)
 
     implementation(libs.appcompat)
 
@@ -106,6 +95,10 @@ dependencies {
     androidTestImplementation("androidx.test:core:1.5.0")
     androidTestImplementation("androidx.test.ext:junit:1.1.5")
     androidTestImplementation("androidx.test.espresso:espresso-core:3.5.1")
+    androidTestImplementation(libs.mockito.kotlin)
+    implementation(libs.localbroadcastmanager)
+
+
 
 
 }

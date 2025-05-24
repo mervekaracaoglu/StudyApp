@@ -29,12 +29,12 @@ import com.example.studyapp.reminders.ReminderScreen
 import com.example.studyapp.timer.PomodoroViewModel
 import com.example.studyapp.timer.PomodoroScreen
 import com.example.studyapp.timer.PomodoroViewModelFactory
-import com.example.studyapp.setTheme.SettingsDataStore
+import com.example.studyapp.datastore.SettingsDataStore
 import kotlinx.coroutines.launch
 import androidx.appcompat.app.AppCompatDelegate
 import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
-import com.example.studyapp.setTheme.SettingsUiState
+import com.example.studyapp.datastore.SettingsUiState
 
 
 class MainActivity : ComponentActivity() {
@@ -44,9 +44,10 @@ class MainActivity : ComponentActivity() {
         StudyViewModelFactory(application, repository)
     }
 
-    private val pomodoroViewModel: PomodoroViewModel by viewModels{
+    val pomodoroViewModel: PomodoroViewModel by viewModels {
         PomodoroViewModelFactory(applicationContext)
     }
+
 
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
@@ -163,7 +164,7 @@ fun BottomBar(navController: NavHostController) {
                 onClick = {
                     if (currentRoute != item.route) {
                         navController.navigate(item.route) {
-                            popUpTo("home")
+                            popUpTo("dashboard")
                             launchSingleTop = true
                         }
                     }

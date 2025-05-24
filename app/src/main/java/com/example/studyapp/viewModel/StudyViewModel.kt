@@ -5,7 +5,7 @@ import androidx.lifecycle.AndroidViewModel
 import androidx.lifecycle.application
 import androidx.lifecycle.viewModelScope
 import com.example.studyapp.database.StudySession
-import com.example.studyapp.setTheme.UserPreferences
+import com.example.studyapp.datastore.UserPreferences
 import com.example.studyapp.repository.StudyRepository
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.SharingStarted

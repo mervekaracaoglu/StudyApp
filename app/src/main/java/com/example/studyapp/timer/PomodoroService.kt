@@ -22,7 +22,7 @@ class PomodoroService : LifecycleService() {
     private var timerJob: Job? = null
     private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
 
-    private val state = MutableStateFlow(PomodoroState(timeLeftMillis = 25 * 60 * 1000L))
+    private val state = MutableStateFlow(PomodoroState(timeLeftMillis = 1 * 60 * 1000L))
 
     override fun onCreate() {
         super.onCreate()
@@ -33,10 +33,7 @@ class PomodoroService : LifecycleService() {
         super.onStartCommand(intent, flags, startId)
         Log.d("PomodoroService", "Received intent: ${intent?.action}")
         when (intent?.action) {
-            ACTION_START -> {
-                Log.d("PomodoroService", "Received ACTION_START")
-                startTimer()
-            }
+            ACTION_START -> startTimer()
             ACTION_PAUSE -> pauseTimer()
             ACTION_RESET -> resetTimer()
             ACTION_STOP -> stopSelf()
@@ -45,21 +42,13 @@ class PomodoroService : LifecycleService() {
     }
 
     private fun startTimer() {
-        Log.d("PomodoroService", "startTimer() called")
-
-        if (timerJob != null) {
-            Log.d("PomodoroService", "Timer already running")
-            return
-        }
+        if (timerJob != null) return
 
         timerJob = serviceScope.launch {
-            Log.d("PomodoroService", "Timer launched")
             state.update { it.copy(isRunning = true) }
 
             while (state.value.timeLeftMillis > 0) {
                 delay(1000)
-                Log.d("PomodoroService", "Tick: ${state.value.timeLeftMillis}")
-
                 state.update { it.copy(timeLeftMillis = it.timeLeftMillis - 1000) }
                 broadcastStateUpdate()
                 updateNotification()
@@ -123,7 +112,7 @@ class PomodoroService : LifecycleService() {
     private fun buildNotification(current: PomodoroState): Notification {
         val minutes = (current.timeLeftMillis / 1000) / 60
         val seconds = (current.timeLeftMillis / 1000) % 60
-        val formattedTime =  String.format(Locale.US, "%02d:%02d", minutes, seconds)
+        val formattedTime = String.format(Locale.US, "%02d:%02d", minutes, seconds)
 
         val pauseIntent = Intent(this, PomodoroService::class.java).apply { action = ACTION_PAUSE }
         val resetIntent = Intent(this, PomodoroService::class.java).apply { action = ACTION_RESET }
@@ -151,8 +140,11 @@ class PomodoroService : LifecycleService() {
     }
 
     override fun onDestroy() {
-        super.onDestroy()
+        timerJob?.cancel()
+        timerJob = null
+        state.update { it.copy(isRunning = false) }
         serviceScope.cancel()
+        super.onDestroy()
     }
 
     companion object {

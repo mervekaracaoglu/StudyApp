@@ -13,9 +13,6 @@
         </DropdownSelection>
         <DialogSelection />
       </SelectionState>
-      <SelectionState runConfigName="emptyState_shouldReturnZeroValues()">
-        <option name="selectionMode" value="DROPDOWN" />
-      </SelectionState>
       <SelectionState runConfigName="currentStreak_shouldCountConsecutiveDays()">
         <option name="selectionMode" value="DROPDOWN" />
       </SelectionState>

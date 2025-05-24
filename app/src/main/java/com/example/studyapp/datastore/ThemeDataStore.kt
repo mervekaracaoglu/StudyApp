@@ -1,4 +1,4 @@
-package com.example.studyapp.setTheme
+package com.example.studyapp.datastore
 
 import android.content.Context
 import androidx.datastore.preferences.core.booleanPreferencesKey

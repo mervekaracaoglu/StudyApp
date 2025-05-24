@@ -1,13 +1,12 @@
 package com.example.studyapp.timer
 
 import android.content.*
+import android.util.Log
 import androidx.lifecycle.ViewModel
 import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
-import android.util.Log
-
 
 class PomodoroViewModel(private val context: Context) : ViewModel() {
 
@@ -56,4 +55,3 @@ class PomodoroViewModel(private val context: Context) : ViewModel() {
         context.startForegroundService(intent)
     }
 }
-
