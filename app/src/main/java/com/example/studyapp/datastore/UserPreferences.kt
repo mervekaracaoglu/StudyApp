@@ -13,7 +13,9 @@ object UserPreferences {
         context.dataStore.edit { prefs ->
             prefs[WEEKLY_GOAL_KEY] = minutes
         }
+
     }
+    //dataStore.data -> emits changes reactively
     fun loadWeeklyGoal(context: Context): Flow<Int> {
         return context.dataStore.data
             .map { prefs -> prefs[WEEKLY_GOAL_KEY] ?: 150 }

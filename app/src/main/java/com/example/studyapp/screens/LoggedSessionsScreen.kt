@@ -111,6 +111,7 @@ fun LoggedSessionsScreen(
     }
 }
 
+//convert long value in ms to formatted date/time string
 fun formatTimestamp(timestamp: Long): String {
     val sdf = SimpleDateFormat("MMM dd, yyyy - HH:mm", Locale.getDefault())
     return sdf.format(Date(timestamp))

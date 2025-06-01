@@ -225,13 +225,18 @@ fun GoalProgressBar(
             }.padding(16.dp)
     ) {
         Text(stringResource(R.string.weekly_progress), color = MaterialTheme.colorScheme.onSurface)
-        val progress = (current.toFloat() / goal).coerceAtMost(1f)
+
+        val progress = if (goal > 0) (current.toFloat() / goal).coerceIn(0f, 1f) else 0f
 
         LinearProgressIndicator(
             progress = { progress },
-            modifier = Modifier.fillMaxWidth().height(16.dp).padding(top = 8.dp),
+            modifier = Modifier
+                .fillMaxWidth()
+                .height(16.dp)
+                .padding(top = 8.dp),
             color = MaterialTheme.colorScheme.primary
         )
+
 
         val currentHours = current / 60
         val currentMinutes = current % 60

@@ -20,13 +20,18 @@ import kotlinx.coroutines.flow.map
 class StudyViewModel(application: Application, private val repository : StudyRepository )
     : AndroidViewModel(application) {
 
+        //cold flow to StateFlow -> stateIn()
+        //cold flow: doesn't emit unless collected
+    //takes the result of the repository as flow and turns it into StateFlow
     val allSessions: StateFlow<List<StudySession>> =
         repository.getAllSessions()
             .stateIn(viewModelScope, SharingStarted.WhileSubscribed(5000), emptyList())
 
+
     fun addSession(session: StudySession) {
         viewModelScope.launch {
             repository.insertSession(session)
+
         }
     }
     fun deleteSession(session: StudySession) {
@@ -40,8 +45,9 @@ class StudyViewModel(application: Application, private val repository : StudyRep
         }
     }
 
-    private val _todayStudyMinutes = MutableStateFlow(0)
-    val todayStudyMinutes: StateFlow<Int> = _todayStudyMinutes
+    private val _todayStudyMinutes = MutableStateFlow(0) //internal mutable state
+    val todayStudyMinutes: StateFlow<Int> = _todayStudyMinutes //external read-only state
+    //to protect state from being modified outside
 
     fun loadTodayStudyMinutes() {
         viewModelScope.launch {
@@ -59,6 +65,7 @@ class StudyViewModel(application: Application, private val repository : StudyRep
         var streak = 0
         var calendar = Calendar.getInstance()
 
+        //loops starting from today goes back one day until there are no days
         while (true) {
             val dateStr = SimpleDateFormat("yyyy-MM-dd", Locale.getDefault()).format(calendar.time)
             if (dates.contains(dateStr)) {
@@ -73,18 +80,22 @@ class StudyViewModel(application: Application, private val repository : StudyRep
     }.stateIn(viewModelScope, SharingStarted.Eagerly, 0)
 
 
+
     val weeklyStudyMinutes: StateFlow<Int> = allSessions
         .map { sessions ->
-            val now = Calendar.getInstance()
+            val now = Calendar.getInstance() //current time
             val startOfWeek = now.clone() as Calendar
             startOfWeek.set(Calendar.DAY_OF_WEEK, startOfWeek.firstDayOfWeek)
+            //Resets the time to 0 on the first day of the week (depending on locale).
             startOfWeek.set(Calendar.HOUR_OF_DAY, 0)
             startOfWeek.set(Calendar.MINUTE, 0)
             startOfWeek.set(Calendar.SECOND, 0)
             startOfWeek.set(Calendar.MILLISECOND, 0)
 
             sessions
+                //sessions where the timestamp is after startOfWeek
                 .filter { it.timestamp >= startOfWeek.timeInMillis }
+                //sums those sessions
                 .sumOf { it.durationMinutes }
         }
         .stateIn(viewModelScope, SharingStarted.Eagerly, 0)
@@ -92,9 +103,11 @@ class StudyViewModel(application: Application, private val repository : StudyRep
     private val _weeklyGoalMinutes = MutableStateFlow(150)
     val weeklyGoalMinutes: StateFlow<Int> = _weeklyGoalMinutes.asStateFlow()
 
+    //init: loads the saved weekly goal on ViewModel creation
     init {
         viewModelScope.launch {
             UserPreferences.loadWeeklyGoal(application).collect {
+                //collects emitted values from the flow
                 _weeklyGoalMinutes.value = it
             }
         }
@@ -103,7 +116,7 @@ class StudyViewModel(application: Application, private val repository : StudyRep
     fun setWeeklyGoal(minutes: Int) {
         viewModelScope.launch {
             _weeklyGoalMinutes.value = minutes
-            UserPreferences.saveWeeklyGoal(application, minutes)
+            UserPreferences.saveWeeklyGoal(application, minutes) //persist the new value
         }
     }
 

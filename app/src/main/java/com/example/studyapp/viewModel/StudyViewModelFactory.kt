@@ -15,3 +15,5 @@ class StudyViewModelFactory(
     }
 }
 
+//dependency injection into viewmodel,works with by viewModels and viewModelProvide(): lifecycle aware
+// testable, compose-ready: survives recompositions and screen rotations

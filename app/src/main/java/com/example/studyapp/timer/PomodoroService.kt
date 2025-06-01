@@ -16,11 +16,12 @@ import java.util.Locale
 
 class PomodoroService : LifecycleService() {
 
-    private val channelId = "pomodoro_channel"
+    private val channelId = "pomodoro_channel_v1"
     private val notificationId = 1
 
     private var timerJob: Job? = null
     private val serviceScope = CoroutineScope(Dispatchers.Default + SupervisorJob())
+    //default = background , SupervisorJob() ensures if one coroutine failure it doesn't cancel the entire scope
 
     private val state = MutableStateFlow(PomodoroState(timeLeftMillis = 1 * 60 * 1000L))
 
@@ -39,6 +40,7 @@ class PomodoroService : LifecycleService() {
             ACTION_STOP -> stopSelf()
         }
         return START_STICKY
+        //if the service is killed by the system, restart it as soon as possible with a null intent
     }
 
     private fun startTimer() {
@@ -50,13 +52,15 @@ class PomodoroService : LifecycleService() {
             while (state.value.timeLeftMillis > 0) {
                 delay(1000)
                 state.update { it.copy(timeLeftMillis = it.timeLeftMillis - 1000) }
-                broadcastStateUpdate()
-                updateNotification()
+                //copy -> creates a new immutable instance of PomodoroState
+                broadcastStateUpdate() //sends a local broadcast intent
+                updateNotification() //updates the ongoing notification with new time
             }
             onTimerFinish()
         }
 
         startForeground(notificationId, buildNotification(state.value))
+        //shows a persistent notification while the service runs in the foreground
     }
 
     private fun pauseTimer() {
@@ -94,6 +98,7 @@ class PomodoroService : LifecycleService() {
             )
         }
         state.value = newState
+        playEndSound()
         broadcastStateUpdate()
         updateNotification()
     }
@@ -146,6 +151,17 @@ class PomodoroService : LifecycleService() {
         serviceScope.cancel()
         super.onDestroy()
     }
+
+    private fun playEndSound() {
+        try {
+            val ringtoneUri = android.provider.Settings.System.DEFAULT_NOTIFICATION_URI
+            val ringtone = android.media.RingtoneManager.getRingtone(applicationContext, ringtoneUri)
+            ringtone?.play()
+        } catch (e: Exception) {
+            Log.e("PomodoroService", "Failed to play end sound", e)
+        }
+    }
+
 
     companion object {
         const val ACTION_START = "ACTION_START"

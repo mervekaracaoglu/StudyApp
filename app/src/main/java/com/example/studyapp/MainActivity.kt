@@ -40,28 +40,32 @@ import com.example.studyapp.datastore.SettingsUiState
 class MainActivity : ComponentActivity() {
     private val viewModel: StudyViewModel by viewModels {
         val dao = StudyDatabase.getDatabase(applicationContext).sessionDao()
-        val repository = StudyRepository(dao)
+        val repository = StudyRepository(dao) //abstract the data layer
+        //enables accessing room db methods while decoupling ViewModel from db implementation
         StudyViewModelFactory(application, repository)
+        //building StudyViewModel with injected Application and Repository
     }
+
 
     val pomodoroViewModel: PomodoroViewModel by viewModels {
         PomodoroViewModelFactory(applicationContext)
     }
 
-
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
 
-
         enableEdgeToEdge()
         val settingsFlow = SettingsDataStore.getSettings(applicationContext)
-
+        //gets the preference for theme as flow
 
         setContent {
             val uiState by settingsFlow.collectAsState(initial = SettingsUiState())
+            //collects the flow as state, so compose can observe changes
 
+            //react to state changes in a coroutine-safe way
             LaunchedEffect(uiState.isDarkTheme) {
+                //control global UI Settings
                 AppCompatDelegate.setDefaultNightMode(
                     if (uiState.isDarkTheme) AppCompatDelegate.MODE_NIGHT_YES
                     else AppCompatDelegate.MODE_NIGHT_NO
@@ -70,10 +74,11 @@ class MainActivity : ComponentActivity() {
 
             StudyAppTheme(darkTheme = uiState.isDarkTheme) {
                 val navController = rememberNavController()
-
-
+                //remember navigation state across recompositions
                 val context = this
+                //saving the current activity context to show show a Toast
                 val notificationPermissionLauncher = rememberLauncherForActivityResult(
+                    //registers a permission launcher
                     contract = ActivityResultContracts.RequestPermission()
                 ) { isGranted ->
                     Toast.makeText(
@@ -83,14 +88,18 @@ class MainActivity : ComponentActivity() {
                     ).show()
                 }
 
+                //side effect handler
+                //unit : this block runs once, when composable first enters the compositions
                 LaunchedEffect(Unit) {
                     if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.TIRAMISU) {
                         if (ContextCompat.checkSelfPermission(
+                                //check if the permission is granted, using the activity context above
                                 context,
                                 Manifest.permission.POST_NOTIFICATIONS
                             ) != PackageManager.PERMISSION_GRANTED
                         ) {
                             notificationPermissionLauncher.launch(Manifest.permission.POST_NOTIFICATIONS)
+                            //launch the permission API
                         }
                     }
                 }
@@ -124,8 +133,10 @@ class MainActivity : ComponentActivity() {
                         composable("loggedSessions") {
                             LoggedSessionsScreen(viewModel = viewModel, navController = navController)
                         }
+
+                        //dynamic route
                         composable("editSession/{sessionId}") { backStackEntry ->
-                            val sessionId = backStackEntry.arguments?.getString("sessionId")?.toIntOrNull()
+                            val sessionId = backStackEntry.arguments?.getString("sessionId")?.toIntOrNull() //?. if not null, ?: if null
                             sessionId?.let {
                                 EditSessionScreen(it, viewModel, navController)
                             }
@@ -157,6 +168,7 @@ fun BottomBar(navController: NavHostController) {
     )
 
     NavigationBar {
+        //observes the current navigation route reactively
         val currentRoute = navController.currentBackStackEntryAsState().value?.destination?.route
         items.forEach { item ->
             NavigationBarItem(
@@ -165,7 +177,9 @@ fun BottomBar(navController: NavHostController) {
                     if (currentRoute != item.route) {
                         navController.navigate(item.route) {
                             popUpTo("dashboard")
+                            //avoids stacking the same screen multiple times
                             launchSingleTop = true
+                            //if the route is already at the top, it wont relaunch
                         }
                     }
                 },

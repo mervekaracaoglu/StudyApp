@@ -36,6 +36,7 @@ fun EditSessionScreen(
         return
     }
 
+
     Scaffold(
         topBar = {
             TopAppBar(

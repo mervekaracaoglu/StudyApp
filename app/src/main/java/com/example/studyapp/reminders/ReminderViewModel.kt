@@ -41,11 +41,13 @@ class ReminderViewModel(
             return
         }
 
+        //create the broadcast intent , targets ReminderReceiver (BroadCastReceiver)
         val intent = Intent(context, ReminderReceiver::class.java).apply {
             putExtra("title", title)
             putExtra("message", message)
         }
 
+        //wraps the intent in a PendingIntent so AlarmManager can fire even if the app is not running
         val pendingIntent = PendingIntent.getBroadcast(
             context,
             timeInMillis.toInt(),

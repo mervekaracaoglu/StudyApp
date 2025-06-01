@@ -10,9 +10,11 @@ import kotlinx.coroutines.flow.update
 
 class PomodoroViewModel(private val context: Context) : ViewModel() {
 
-    private val _state = MutableStateFlow(PomodoroState(timeLeftMillis = 25 * 60 * 1000L))
+    private val _state = MutableStateFlow(PomodoroState(timeLeftMillis = 1 * 60 * 1000L))
     val state: StateFlow<PomodoroState> = _state
 
+    //listens for broadcasted updates from PomodoroService
+    //extracts relevant data from intent
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == PomodoroService.ACTION_UPDATE_STATE) {
@@ -22,6 +24,7 @@ class PomodoroViewModel(private val context: Context) : ViewModel() {
                 val isBreak = intent.getBooleanExtra(PomodoroService.EXTRA_IS_BREAK, _state.value.isBreak)
                 val isLongBreak = intent.getBooleanExtra(PomodoroService.EXTRA_IS_LONG_BREAK, _state.value.isLongBreak)
 
+                //updates the ViewModel state
                 _state.update {
                     it.copy(
                         timeLeftMillis = timeLeft,
@@ -35,6 +38,7 @@ class PomodoroViewModel(private val context: Context) : ViewModel() {
         }
     }
 
+    //registers the broadcast listener when the viewmodel is created
     init {
         LocalBroadcastManager.getInstance(context).registerReceiver(
             broadcastReceiver,
@@ -42,16 +46,19 @@ class PomodoroViewModel(private val context: Context) : ViewModel() {
         )
     }
 
+    //unregisters listeners when viewmodel is destroyed
     override fun onCleared() {
         LocalBroadcastManager.getInstance(context).unregisterReceiver(broadcastReceiver)
         super.onCleared()
     }
 
+    //sending control commands to the Pomodoro Service
     fun controlForegroundService(action: String) {
         Log.d("PomodoroViewModel", "Sending intent with action: $action")
         val intent = Intent(context, PomodoroService::class.java).apply {
             this.action = action
         }
         context.startForegroundService(intent)
+        //triggers onStartCommand() in PomodoroService
     }
 }
