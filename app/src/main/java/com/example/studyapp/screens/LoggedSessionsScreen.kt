@@ -21,7 +21,16 @@ import kotlinx.coroutines.launch
 import java.text.SimpleDateFormat
 import java.util.*
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-
+/**
+ * Composable screen that displays all logged [StudySession]s.
+ * Users can:
+ * - Filter sessions by completion or due date.
+ * - Delete sessions with snackbar confirmation.
+ * - Navigate to edit individual sessions.
+ *
+ * @param viewModel The [StudyViewModel] providing session data and actions.
+ * @param navController The [NavController] used to navigate to the Edit screen.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun LoggedSessionsScreen(
@@ -111,12 +120,24 @@ fun LoggedSessionsScreen(
     }
 }
 
-//convert long value in ms to formatted date/time string
+/**
+ * Formats a [Long] timestamp (in milliseconds) to a user-friendly date-time string.
+ *
+ * @param timestamp The time in milliseconds.
+ * @return A formatted string like "Apr 12, 2025 - 14:30".
+ */
 fun formatTimestamp(timestamp: Long): String {
     val sdf = SimpleDateFormat("MMM dd, yyyy - HH:mm", Locale.getDefault())
     return sdf.format(Date(timestamp))
 }
 
+/**
+ * Displays a single session card with subject, duration, optional fields, and actions.
+ *
+ * @param session The [StudySession] to display.
+ * @param onDelete Called when the delete button is pressed.
+ * @param onEdit Called when the session item is clicked.
+ */
 @Composable
 fun SessionItem(
     session: StudySession,

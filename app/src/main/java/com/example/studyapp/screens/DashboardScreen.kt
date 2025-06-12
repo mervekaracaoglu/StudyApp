@@ -20,7 +20,16 @@ import androidx.navigation.NavController
 import com.example.studyapp.R
 import com.example.studyapp.viewModel.StudyViewModel
 import androidx.compose.material.icons.automirrored.filled.List
-
+/**
+ * Composable for the main dashboard screen.
+ * Displays key stats, quick navigation buttons, a weekly goal progress bar,
+ * and a list of upcoming study sessions due within 2 days.
+ *
+ * @param navController The NavController for navigating to other screens.
+ * @param viewModel The StudyViewModel for retrieving session and study data.
+ * @param isDarkTheme Current theme setting (true = dark mode).
+ * @param onToggleTheme Callback to toggle the app's theme.
+ */
 @Composable
 fun DashboardScreen(navController: NavController, viewModel: StudyViewModel, isDarkTheme: Boolean, onToggleTheme: () -> Unit) {
     LaunchedEffect(Unit) {
@@ -59,7 +68,7 @@ fun DashboardScreen(navController: NavController, viewModel: StudyViewModel, isD
         )
 
         Spacer(modifier = Modifier.height(24.dp))
-
+        //stats cards
         Row(
             modifier = Modifier.fillMaxWidth(),
             horizontalArrangement = Arrangement.spacedBy(16.dp)
@@ -67,7 +76,7 @@ fun DashboardScreen(navController: NavController, viewModel: StudyViewModel, isD
             InfoCard(stringResource(R.string.time_studied), formattedTime)
 
             InfoCard(stringResource(R.string.current_streak), "$currentStreak days")
-
+            //theme card
             Surface(
                 modifier = Modifier.height(100.dp).width(100.dp),
                 shape = RoundedCornerShape(16.dp),
@@ -139,6 +148,12 @@ fun DashboardScreen(navController: NavController, viewModel: StudyViewModel, isD
     }
 }
 
+/**
+ * Reusable UI component that displays a stat card with a title and value.
+ *
+ * @param title The label describing the value.
+ * @param value The actual stat (e.g., "3 days", "45 min").
+ */
 @Composable
 fun InfoCard(title: String, value: String) {
     Surface(
@@ -155,7 +170,13 @@ fun InfoCard(title: String, value: String) {
         }
     }
 }
-
+/**
+ * Reusable navigation button styled as a surface row.
+ *
+ * @param label The label for the button.
+ * @param icon The icon to show on the left.
+ * @param onClick The action to perform when clicked.
+ */
 @Composable
 fun ActionButton(label: String, icon: ImageVector, onClick: () -> Unit = {}) {
     Surface(
@@ -174,6 +195,13 @@ fun ActionButton(label: String, icon: ImageVector, onClick: () -> Unit = {}) {
     }
 }
 
+/**
+ * Displays and manages a weekly goal progress bar with click-to-edit functionality.
+ *
+ * @param current The current minutes studied this week.
+ * @param goal The target weekly study goal in minutes.
+ * @param onGoalChange Callback when a new goal is set.
+ */
 @Composable
 fun GoalProgressBar(
     current: Int,

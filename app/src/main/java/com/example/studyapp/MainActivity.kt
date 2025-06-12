@@ -36,8 +36,18 @@ import androidx.compose.ui.graphics.painter.Painter
 import androidx.compose.ui.res.painterResource
 import com.example.studyapp.datastore.SettingsUiState
 
+/**
+ * MainActivity is the main entry point of the StudyBuddy.
+ * It initializes the theme settings, handles runtime permissions,
+ * manages navigation, and provides global access to ViewModels.
+ */
+
 
 class MainActivity : ComponentActivity() {
+    /**
+     * ViewModel for managing study sessions and app logic.
+     * It uses a repository that abstracts Room database access.
+     */
     private val viewModel: StudyViewModel by viewModels {
         val dao = StudyDatabase.getDatabase(applicationContext).sessionDao()
         val repository = StudyRepository(dao) //abstract the data layer
@@ -46,11 +56,16 @@ class MainActivity : ComponentActivity() {
         //building StudyViewModel with injected Application and Repository
     }
 
-
+    /**
+     * ViewModel for managing Pomodoro timer state.
+     */
     val pomodoroViewModel: PomodoroViewModel by viewModels {
         PomodoroViewModelFactory(applicationContext)
     }
 
+    /**
+     * Sets up the UI, navigation, theme preferences, and notification permissions.
+     */
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -76,7 +91,7 @@ class MainActivity : ComponentActivity() {
                 val navController = rememberNavController()
                 //remember navigation state across recompositions
                 val context = this
-                //saving the current activity context to show show a Toast
+                //saving the current activity context to show a Toast
                 val notificationPermissionLauncher = rememberLauncherForActivityResult(
                     //registers a permission launcher
                     contract = ActivityResultContracts.RequestPermission()
@@ -158,6 +173,12 @@ class MainActivity : ComponentActivity() {
         }
     }
 
+/**
+ * Composable function that renders the bottom navigation bar of the app.
+ *
+ * @param navController The NavHostController used to handle navigation.
+ */
+
 @Composable
 fun BottomBar(navController: NavHostController) {
     val items = listOf(
@@ -189,5 +210,13 @@ fun BottomBar(navController: NavHostController) {
         }
     }
 }
+
+/**
+ * Represents an item in the bottom navigation bar.
+ *
+ * @property route The route string used for navigation.
+ * @property label The text label displayed below the icon.
+ * @property icon The painter resource used for the icon.
+ */
 
 data class BottomNavItem(val route: String, val label: String, val icon: Painter)

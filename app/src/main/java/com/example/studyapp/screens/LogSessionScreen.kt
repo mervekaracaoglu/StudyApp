@@ -16,7 +16,14 @@ import com.example.studyapp.database.StudySession
 import com.example.studyapp.viewModel.StudyViewModel
 import java.text.SimpleDateFormat
 import java.util.*
-
+/**
+ * Composable screen for logging a new [StudySession].
+ * Allows the user to input a subject, duration, optional tag and notes,
+ * mark it as completed, and optionally set a due date and time.
+ *
+ * @param viewModel The [StudyViewModel] used to save the session.
+ * @param onSessionSaved Callback invoked after the session is successfully saved.
+ */
 @Composable
 fun LogSessionScreen(
     viewModel: StudyViewModel,

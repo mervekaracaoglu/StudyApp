@@ -7,14 +7,29 @@ import androidx.localbroadcastmanager.content.LocalBroadcastManager
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.update
-
+/**
+ * [PomodoroViewModel] manages the UI state for the Pomodoro timer.
+ * It communicates with [PomodoroService] using local broadcasts and updates its
+ * state based on received timer data. It also provides methods to control the service.
+ *
+ * @param context The application context used for broadcasting and starting services.
+ */
 class PomodoroViewModel(private val context: Context) : ViewModel() {
 
-    private val _state = MutableStateFlow(PomodoroState(timeLeftMillis = 1 * 60 * 1000L))
+    /**
+     * Internal mutable state for the Pomodoro timer.
+     */
+    private val _state = MutableStateFlow(PomodoroState(timeLeftMillis = 25 * 60 * 1000L))
+
+    /**
+     * Exposed immutable [StateFlow] for observing timer state in the UI.
+     */
     val state: StateFlow<PomodoroState> = _state
 
-    //listens for broadcasted updates from PomodoroService
-    //extracts relevant data from intent
+    /**
+     * BroadcastReceiver that listens for updates from [PomodoroService].
+     * It extracts timer information from the intent and updates the ViewModel state.
+     */
     private val broadcastReceiver = object : BroadcastReceiver() {
         override fun onReceive(context: Context?, intent: Intent?) {
             if (intent?.action == PomodoroService.ACTION_UPDATE_STATE) {
@@ -38,7 +53,9 @@ class PomodoroViewModel(private val context: Context) : ViewModel() {
         }
     }
 
-    //registers the broadcast listener when the viewmodel is created
+    /**
+     * Registers the [broadcastReceiver] to listen for service updates when the ViewModel is created.
+     */
     init {
         LocalBroadcastManager.getInstance(context).registerReceiver(
             broadcastReceiver,
@@ -46,13 +63,20 @@ class PomodoroViewModel(private val context: Context) : ViewModel() {
         )
     }
 
-    //unregisters listeners when viewmodel is destroyed
+    /**
+     * Unregisters the broadcast receiver when the ViewModel is destroyed.
+     * Prevents memory leaks and unintended updates.
+     */
     override fun onCleared() {
         LocalBroadcastManager.getInstance(context).unregisterReceiver(broadcastReceiver)
         super.onCleared()
     }
 
-    //sending control commands to the Pomodoro Service
+    /**
+     * Sends a control intent to the [PomodoroService] to perform actions like start, pause, or reset.
+     *
+     * @param action The action string to be handled by the service.
+     */
     fun controlForegroundService(action: String) {
         Log.d("PomodoroViewModel", "Sending intent with action: $action")
         val intent = Intent(context, PomodoroService::class.java).apply {

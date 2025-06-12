@@ -16,7 +16,16 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import java.util.*
 import java.util.Date
-
+/**
+ * Composable screen for scheduling and managing user reminders.
+ *
+ * Includes:
+ * - Title and message input
+ * - Date & time picker for scheduling
+ * - Option to repeat daily
+ * - List of scheduled reminders
+ * - Deletion of reminders
+ */
 @Composable
 fun ReminderScreen() {
     val context = LocalContext.current
@@ -29,6 +38,7 @@ fun ReminderScreen() {
     var message by remember { mutableStateOf("") }
     var isRepeating by remember { mutableStateOf(false) }
 
+    // Initial reminder time is set to 30 seconds from now
     var calendar by remember {
         mutableStateOf(Calendar.getInstance().apply { add(Calendar.SECOND, 30) })
     }

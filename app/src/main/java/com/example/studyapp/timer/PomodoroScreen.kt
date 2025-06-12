@@ -11,11 +11,18 @@ import androidx.compose.ui.unit.dp
 import androidx.lifecycle.viewmodel.compose.viewModel
 import com.example.studyapp.R
 import java.util.Locale
-
+/**
+ * Composable screen for the Pomodoro timer UI.
+ * Displays the current session type, countdown time, control buttons (Start/Pause/Reset),
+ * and number of completed sessions.
+ *
+ * @param viewModel The [PomodoroViewModel] providing timer state and control logic.
+ */
 @Composable
 fun PomodoroScreen(
     viewModel: PomodoroViewModel = viewModel(factory = PomodoroViewModelFactory(LocalContext.current))
 ) {
+    //Observe the PomodoroState from the ViewModel
     val state by viewModel.state.collectAsState()
 
     val minutes = (state.timeLeftMillis / 1000) / 60
@@ -27,6 +34,7 @@ fun PomodoroScreen(
         horizontalAlignment = Alignment.CenterHorizontally,
         verticalArrangement = Arrangement.Center
     ) {
+        //Session Label
         Text(
             text = when {
                 state.isBreak && state.isLongBreak -> stringResource(R.string.long_break)
@@ -38,6 +46,7 @@ fun PomodoroScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        //Time display
         Text(
             text = timeText,
             style = MaterialTheme.typography.displayLarge
@@ -45,6 +54,7 @@ fun PomodoroScreen(
 
         Spacer(modifier = Modifier.height(32.dp))
 
+        // Start/Pause and Reset buttons
         Row(horizontalArrangement = Arrangement.spacedBy(16.dp)) {
             Button(onClick = {
                 val action = if (state.isRunning) PomodoroService.ACTION_PAUSE else PomodoroService.ACTION_START
@@ -67,6 +77,7 @@ fun PomodoroScreen(
 
         Spacer(modifier = Modifier.height(16.dp))
 
+        //Session counter
         Text(
             text = stringResource(R.string.sessions_completed, state.sessionCount)
         )

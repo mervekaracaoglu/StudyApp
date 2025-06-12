@@ -17,6 +17,16 @@ import androidx.compose.ui.unit.dp
 import com.example.studyapp.R
 import com.example.studyapp.viewModel.StudyViewModel
 
+/**
+ * Composable screen displaying analytics about study activity.
+ * It shows:
+ * - Total and average study time
+ * - Longest session
+ * - Most used tags
+ * - Time spent per subject (visualized as a bar chart)
+ *
+ * @param viewModel The [StudyViewModel] providing session data.
+ */
 @Composable
 fun AnalyticsScreen(viewModel: StudyViewModel) {
     val sessions = viewModel.allSessions.collectAsState().value
@@ -67,7 +77,11 @@ fun AnalyticsScreen(viewModel: StudyViewModel) {
         }
     }
 }
-
+/**
+ * Simple horizontal bar chart that visualizes time spent per subject.
+ *
+ * @param data A map where keys are subject names and values are total minutes.
+ */
 @Composable
 fun BarChart(data: Map<String, Int>) {
     val maxVal = data.values.maxOrNull()?.takeIf { it > 0 } ?: 1

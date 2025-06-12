@@ -12,13 +12,20 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import kotlinx.coroutines.flow.*
 import kotlinx.coroutines.launch
-
+/**
+ * ViewModel for managing reminders using AlarmManager and Room database.
+ *
+ * @property app The application context used for system services and operations.
+ * @property dao The ReminderDao used for accessing reminder data from Room database.
+ */
 class ReminderViewModel(
     private val app: Application,
     private val dao: ReminderDao
 ) : ViewModel() {
 
     private val _reminders = MutableStateFlow<List<ReminderEntity>>(emptyList())
+
+    /** Public state flow exposing all current reminders. */
     val reminders: StateFlow<List<ReminderEntity>> = _reminders.asStateFlow()
 
     init {
@@ -27,6 +34,16 @@ class ReminderViewModel(
         }
     }
 
+    /**
+     * Schedules a reminder using Android's AlarmManager.
+     *
+     * @param title The title of the reminder.
+     * @param message The message body of the reminder.
+     * @param timeInMillis The time (in milliseconds) when the alarm should trigger.
+     * @param isRepeating Whether the alarm should repeat daily.
+     *
+     * @throws SecurityException if exact alarms are not allowed and the request is blocked.
+     */
     fun scheduleReminder(title: String, message: String, timeInMillis: Long, isRepeating: Boolean) {
         val context = app.applicationContext
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager
@@ -79,6 +96,7 @@ class ReminderViewModel(
                 isRepeating = isRepeating
             )
 
+            //save the room and update ui
             viewModelScope.launch {
                 dao.insert(reminder)
                 _reminders.value = dao.getAll()
@@ -89,7 +107,11 @@ class ReminderViewModel(
             Log.e("ReminderDebug", "SecurityException: Cannot schedule exact alarm", e)
         }
     }
-
+    /**
+     * Cancels a previously scheduled reminder and removes it from the database.
+     *
+     * @param reminder The [ReminderEntity] to cancel and delete.
+     */
     fun cancelReminder(reminder: ReminderEntity) {
         val context = app.applicationContext
         val alarmManager = context.getSystemService(Context.ALARM_SERVICE) as AlarmManager

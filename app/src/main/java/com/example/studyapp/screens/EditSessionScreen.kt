@@ -14,7 +14,15 @@ import androidx.navigation.NavController
 import com.example.studyapp.R
 import com.example.studyapp.viewModel.StudyViewModel
 import androidx.compose.material.icons.automirrored.filled.ArrowBack
-
+/**
+ * Composable screen for editing an existing study session.
+ * Fetches the session using the provided [sessionId] and allows the user to modify
+ * its subject, duration, tag, and notes.
+ *
+ * @param sessionId The unique ID of the [StudySession] to be edited.
+ * @param viewModel The [StudyViewModel] that manages session data.
+ * @param navController The [NavController] used to navigate back after saving.
+ */
 @OptIn(ExperimentalMaterial3Api::class)
 @Composable
 fun EditSessionScreen(
@@ -22,6 +30,7 @@ fun EditSessionScreen(
     viewModel: StudyViewModel,
     navController: NavController
 ) {
+    //retrieve session by id
     val session = viewModel.allSessions.collectAsState().value.find { it.id == sessionId }
 
     var subject by remember { mutableStateOf(session?.subject ?: "") }
